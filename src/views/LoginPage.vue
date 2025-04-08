@@ -17,7 +17,7 @@
             />
           </div>
           <div class="mb-3">
-            <label for="password" class="form-label">password</label>
+            <label for="password" class="form-label">Senha</label>
             <input
               v-model="password"
               type="password"
