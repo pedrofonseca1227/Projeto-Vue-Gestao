@@ -46,7 +46,6 @@
                     id="ano_nasc"
                     v-model="gado.ano_nasc"
                     placeholder="Ano de Nascimento"
-                    required
                   />
                 </div>
   
