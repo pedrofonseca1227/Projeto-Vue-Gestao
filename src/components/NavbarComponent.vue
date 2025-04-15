@@ -36,7 +36,7 @@
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/adicionar-gado" class="nav-link" active-class="active">
+            <router-link to="/add-gado" class="nav-link" active-class="active">
               <i class="fa fa-plus-circle"></i> Adicionar Gado
             </router-link>
           </li>
