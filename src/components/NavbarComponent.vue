@@ -1,10 +1,13 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Estoque almoxarifado</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <a class="navbar-brand" href="#">Estoque Almoxarifado</a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
+
       <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
@@ -19,15 +22,22 @@
           </li>
           <li class="nav-item">
             <router-link to="/relatorios" class="nav-link" active-class="active">
-              <i class="fa fa-file-alt"></i> Relatórios de movimentação
+              <i class="fa fa-file-alt"></i> Relatórios de Movimentação
             </router-link>
           </li>
-        </ul>
-        <a class="navbar-brand" name="gado" href="#">Bovinos</a>
-        <ul>
-          <li class="nav item">
+
+          <!-- Separação lógica -->
+          <li class="nav-item nav-title">
+            <span class="nav-title">Bovinos</span>
+          </li>
+          <li class="nav-item">
             <router-link to="/contagem" class="nav-link" active-class="active">
               <i class="fa fa-file-alt"></i> Contagem Animais
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/adicionar-gado" class="nav-link" active-class="active">
+              <i class="fa fa-plus-circle"></i> Adicionar Gado
             </router-link>
           </li>
         </ul>
@@ -52,8 +62,6 @@ export default {
 .navbar-brand {
   font-weight: bold;
   font-size: 1.5rem;
-  text-align: center;
-  width: 100%;
 }
 
 .navbar-collapse {
@@ -66,6 +74,7 @@ export default {
   display: flex;
   justify-content: center;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .nav-item {
@@ -105,6 +114,14 @@ export default {
   transform-origin: bottom left;
 }
 
+.nav-title {
+  color: #fff;
+  font-weight: bold;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+}
+
 @media (max-width: 991px) {
   .nav-item {
     margin-right: 10px;
@@ -116,7 +133,7 @@ export default {
     display: flex;
     justify-content: center;
   }
-  
+
   .navbar-nav {
     width: 100%;
     justify-content: center;
