@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">Estoque Almoxarifado</a>
 
@@ -9,35 +9,41 @@
       </button>
 
       <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav align-items-center">
+          <!-- Sessão de Produtos -->
           <li class="nav-item">
             <router-link to="/produtos" class="nav-link" active-class="active">
-              <i class="fa fa-cogs"></i> Produtos
+              <i class="fa fa-cogs me-1"></i> Produtos
             </router-link>
           </li>
           <li class="nav-item">
             <router-link to="/adicionar-produto" class="nav-link" active-class="active">
-              <i class="fa fa-plus"></i> Adicionar Produto
+              <i class="fa fa-plus me-1"></i> Adicionar Produto
             </router-link>
           </li>
           <li class="nav-item">
             <router-link to="/relatorios" class="nav-link" active-class="active">
-              <i class="fa fa-file-alt"></i> Relatórios de Movimentação
+              <i class="fa fa-file-alt me-1"></i> Relatórios
             </router-link>
           </li>
 
-          <!-- Separação lógica -->
-          <li class="nav-item nav-title">
-            <span class="nav-title">Bovinos</span>
+          <!-- Divisor visual -->
+          <li class="nav-divider"></li>
+
+          <!-- Título da seção de Gado -->
+          <li class="nav-section-title">
+            <span><i class="fa fa-cow me-1"></i> Bovinos</span>
           </li>
+
+          <!-- Links da seção Bovinos -->
           <li class="nav-item">
             <router-link to="/contagem" class="nav-link" active-class="active">
-              <i class="fa fa-file-alt"></i> Contagem Animais
+              <i class="fa fa-list me-1"></i> Contagem
             </router-link>
           </li>
           <li class="nav-item">
             <router-link to="/add-gado" class="nav-link" active-class="active">
-              <i class="fa fa-plus-circle"></i> Adicionar Gado
+              <i class="fa fa-plus-circle me-1"></i> Adicionar Gado
             </router-link>
           </li>
         </ul>
@@ -54,26 +60,17 @@ export default {
 
 <style scoped>
 .navbar {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding: 0.7rem 1rem;
+  font-family: 'Segoe UI', sans-serif;
 }
 
 .navbar-brand {
-  font-weight: bold;
-  font-size: 1.5rem;
-}
-
-.navbar-collapse {
-  display: flex;
-  justify-content: center;
-  width: 100%;
+  font-weight: 600;
+  font-size: 1.4rem;
 }
 
 .navbar-nav {
   display: flex;
-  justify-content: center;
-  width: 100%;
   flex-wrap: wrap;
 }
 
@@ -83,17 +80,19 @@ export default {
 
 .nav-link {
   position: relative;
-  transition: color 0.3s ease, padding-left 0.3s ease;
-  padding-left: 20px;
+  color: #f8f9fa;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .nav-link:hover {
-  color: #4285c4;
+  color: #00bcd4;
 }
 
 .nav-link.active {
-  color: #4285c4;
-  font-weight: bold;
+  color: #00bcd4;
+  font-weight: 600;
 }
 
 .nav-link::after {
@@ -101,7 +100,7 @@ export default {
   position: absolute;
   width: 100%;
   height: 2px;
-  background-color: #4285c4;
+  background: #00bcd4;
   bottom: 0;
   left: 0;
   transform: scaleX(0);
@@ -114,29 +113,30 @@ export default {
   transform-origin: bottom left;
 }
 
-.nav-title {
-  color: #fff;
+/* Seção Bovinos */
+.nav-section-title {
   font-weight: bold;
-  padding: 0 1rem;
-  display: flex;
-  align-items: center;
+  color: #ccc;
+  margin: 0 1rem;
+  text-transform: uppercase;
+  font-size: 0.85rem;
 }
 
+.nav-divider {
+  width: 1px;
+  height: 30px;
+  background-color: rgba(255, 255, 255, 0.3);
+  margin: 0 1rem;
+}
+
+/* Mobile */
 @media (max-width: 991px) {
   .nav-item {
-    margin-right: 10px;
+    margin: 0.5rem 0;
   }
-}
 
-@media (max-width: 767px) {
   .navbar-collapse {
-    display: flex;
-    justify-content: center;
-  }
-
-  .navbar-nav {
-    width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
   }
 }
 </style>
