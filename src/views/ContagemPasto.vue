@@ -74,9 +74,15 @@
     computed: {
       bovinosFiltrados() {
         const nomeFiltro = this.filtro.nome.toLowerCase();
-        return this.bovinos.filter((b) =>
-          b.nome.toLowerCase().includes(nomeFiltro)
+        const bovinosFiltrados = this.bovinos.filter((b) =>
+        b.nome.toLowerCase().includes(nomeFiltro)
         );
+
+        return bovinosFiltrados.sort((a, b) => {
+          const numeroA = parseInt(a.nome.match(/\d+/)?.[0] || 0);
+          const numeroB = parseInt(b.nome.match(/\d+/)?.[0] || 0);
+          return numeroA - numeroB;
+        });
       },
       totalBovinos() {
         return this.bovinos.length;
