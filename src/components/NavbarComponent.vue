@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Estoque Fazenda Santa Esméria</a>
+      <a class="navbar-brand" href="#">Estoque almoxarifado</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -20,6 +20,14 @@
           <li class="nav-item">
             <router-link to="/relatorios" class="nav-link" active-class="active">
               <i class="fa fa-file-alt"></i> Relatórios de movimentação
+            </router-link>
+          </li>
+        </ul>
+        <a class="navbar-brand" name="gado" href="#">Bovinos</a>
+        <ul>
+          <li class="nav item">
+            <router-link to="/contagem" class="nav-link" active-class="active">
+              <i class="fa fa-file-alt"></i> Contagem Animais
             </router-link>
           </li>
         </ul>

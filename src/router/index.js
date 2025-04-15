@@ -3,14 +3,18 @@ import LoginPage from '@/views/LoginPage.vue';
 import ProductListPage from '@/views/ProductListPage.vue';
 import AddProduct from '@/components/AddProduct.vue';
 import ReportsPage from '@/views/ReportsPage.vue';
-import EditProduct from '@/components/EditProduct.vue';  // Importe o EditProduct
+import EditProduct from '@/components/EditProduct.vue';
+import AdicionarGado from '@/views/AdicionarGado.vue';
+import ContagemPasto from '@/views/ContagemPasto.vue'; // ⬅️ Importa a nova página
 
 const routes = [
   { path: '/', component: LoginPage },
   { path: '/produtos', component: ProductListPage },
   { path: '/adicionar-produto', component: AddProduct },
   { path: '/relatorios', component: ReportsPage },
-  { path: '/editar-produto/:id', component: EditProduct }, // Rota para edição de produto
+  { path: '/editar-produto/:id', component: EditProduct },
+  { path: '/add-gado', component: AdicionarGado },
+  { path: '/contagem', component: ContagemPasto }, // ⬅️ Adiciona nova rota
 ];
 
 const router = createRouter({
@@ -18,13 +22,12 @@ const router = createRouter({
   routes,
 });
 
-// Proteção de rota: Redirecionar para login se o usuário não estiver autenticado
 router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated');
   if (to.path !== '/' && !isAuthenticated) {
-    next('/');  // Redireciona para a página de login se não estiver autenticado
+    next('/');
   } else {
-    next();  // Permite o acesso à rota
+    next();
   }
 });
 
