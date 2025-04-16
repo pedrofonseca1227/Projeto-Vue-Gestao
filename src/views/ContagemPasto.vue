@@ -60,7 +60,7 @@
     </div>
   </template>
   
-  <script>
+<script>
   import { db } from '@/firebase/firebase';
   import { collection, getDocs } from 'firebase/firestore';
   
@@ -75,13 +75,18 @@
       bovinosFiltrados() {
         const nomeFiltro = this.filtro.nome.toLowerCase();
         const bovinosFiltrados = this.bovinos.filter((b) =>
-        b.nome.toLowerCase().includes(nomeFiltro)
+          b.nome.toLowerCase().includes(nomeFiltro)
         );
-
+  
+        // Ordenação por grupo (primeira palavra) e depois pelo nome completo
         return bovinosFiltrados.sort((a, b) => {
-          const numeroA = parseInt(a.nome.match(/\d+/)?.[0] || 0);
-          const numeroB = parseInt(b.nome.match(/\d+/)?.[0] || 0);
-          return numeroA - numeroB;
+          const grupoA = a.nome.split(' ')[0];
+          const grupoB = b.nome.split(' ')[0];
+  
+          const cmpGrupo = grupoA.localeCompare(grupoB, 'pt', { sensitivity: 'base' });
+          if (cmpGrupo !== 0) return cmpGrupo;
+  
+          return a.nome.localeCompare(b.nome, 'pt', { sensitivity: 'base' });
         });
       },
       totalBovinos() {
@@ -102,7 +107,7 @@
       }));
     },
   };
-  </script>
+</script>
   
   <style scoped>
   .table th,
