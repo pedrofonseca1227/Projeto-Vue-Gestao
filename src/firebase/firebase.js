@@ -5,12 +5,12 @@ import { getStorage } from "firebase/storage"; // Para o storage (se necessário
 
 // Configuração do Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyBab58JFh81bRNGcw-621cwwtHV5dOpD9w",
-  authDomain: "gestao-estoque-e67ca.firebaseapp.com",
-  projectId: "gestao-estoque-e67ca",
-  storageBucket: "gestao-estoque-e67ca.firebasestorage.app",
-  messagingSenderId: "230015375493",
-  appId: "1:230015375493:web:c2c170a80f58c04a84b1ec"
+  apiKey: "AIzaSyAe1Qws4lAa5JLLW0eegoI7jhpPsg6V_0o",
+  authDomain: "estoque-e-gado.firebaseapp.com",
+  projectId: "estoque-e-gado",
+  storageBucket: "estoque-e-gado.firebasestorage.app",
+  messagingSenderId: "748923011191",
+  appId: "1:748923011191:web:97c7be8f542df02849c672"
 };
 
 // Inicializando o Firebase

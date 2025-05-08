@@ -1,7 +1,6 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Estoque Almoxarifado</a>
 
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -14,11 +13,6 @@
           <li class="nav-item">
             <router-link to="/produtos" class="nav-link" active-class="active">
               <i class="fa fa-cogs me-1"></i> Produtos
-            </router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/adicionar-produto" class="nav-link" active-class="active">
-              <i class="fa fa-plus me-1"></i> Adicionar Produto
             </router-link>
           </li>
           <li class="nav-item">
@@ -38,12 +32,22 @@
           <!-- Links da seção Bovinos -->
           <li class="nav-item">
             <router-link to="/contagem" class="nav-link" active-class="active">
-              <i class="fa fa-list me-1"></i> Contagem
+              <i class="fa fa-list me-1"></i> Contagem Pasto
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link to="/add-gado" class="nav-link" active-class="active">
-              <i class="fa fa-plus-circle me-1"></i> Adicionar Gado
+            <router-link to="/add-pasto" class="nav-link" active-class="active">
+              <i class="fa fa-plus-circle me-1"></i> Adicionar Pasto
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/contagem-confinamento" class="nav-link" active-class="active">
+              <i class="fa fa-list me-1"></i> Contagem Confinamento
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/add-confinamento" class="nav-link" active-class="active">
+              <i class="fa fa-plus-circle me-1"></i> Adicionar Confinamento
             </router-link>
           </li>
         </ul>

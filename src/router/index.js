@@ -4,8 +4,10 @@ import ProductListPage from '@/views/ProductListPage.vue';
 import AddProduct from '@/components/AddProduct.vue';
 import ReportsPage from '@/views/ReportsPage.vue';
 import EditProduct from '@/components/EditProduct.vue';
-import AdicionarGado from '@/views/AdicionarGado.vue';
-import ContagemPasto from '@/views/ContagemPasto.vue'; // ⬅️ Importa a nova página
+import AdicionarPasto from '@/views/AdicionarPasto.vue';
+import ContagemPasto from '@/views/ContagemPasto.vue';
+import ContagemConfinamento from '@/views/ContagemConfinamento.vue';
+import AdicionarConfinamento from '@/views/AdicionarConfinamento.vue'; // ⬅️ Importa a nova página
 
 const routes = [
   { path: '/', component: LoginPage },
@@ -13,8 +15,10 @@ const routes = [
   { path: '/adicionar-produto', component: AddProduct },
   { path: '/relatorios', component: ReportsPage },
   { path: '/editar-produto/:id', component: EditProduct },
-  { path: '/add-gado', component: AdicionarGado },
-  { path: '/contagem', component: ContagemPasto }, // ⬅️ Adiciona nova rota
+  { path: '/add-pasto', component: AdicionarPasto },
+  { path: '/contagem', component: ContagemPasto },
+  { path: '/contagem-confinamento', component: ContagemConfinamento },
+  { path: '/add-confinamento', component: AdicionarConfinamento }, // ⬅️ Adiciona nova rota
 ];
 
 const router = createRouter({
