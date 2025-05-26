@@ -49,7 +49,7 @@ export default {
       // Validação de login simples
       if (this.username === 'admin' && this.password === 'senha123') {
         localStorage.setItem('isAuthenticated', 'true');
-        this.$router.push('/produtos');
+        this.$router.push('/home');
       } else {
         alert('Credenciais inválidas');
       }

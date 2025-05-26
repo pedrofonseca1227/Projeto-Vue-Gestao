@@ -187,7 +187,7 @@ export default {
       doc.text(`• Bezerros Macho: ${resumo.bezerrosMacho}`, marginLeft, y); y += 10;
       doc.text(`• Bezerros Fêmea: ${resumo.bezerrosFemea}`, marginLeft, y); y += 10;
       doc.text(`• Bezerros Desmama: ${resumo.bezerrosDesmama}`, marginLeft, y); y += 10;
-
+      doc.text(`• Total: ${totalBovinos.value}`, marginLeft, y); y += 10;
       // Linha de separação
       doc.setLineWidth(0.5);
       doc.line(marginLeft, y, pageWidth - marginLeft, y); y += 10;

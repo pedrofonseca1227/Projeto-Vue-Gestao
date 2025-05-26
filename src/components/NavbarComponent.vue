@@ -1,15 +1,27 @@
 <template>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+  <nav class="navbar navbar-expand-lg shadow-sm">
     <div class="container-fluid">
+
+      <!-- Logo -->
+      <router-link to="/" class="navbar-brand d-flex align-items-center">
+        <img src="@/assets/Logo.png" alt="Logo" class="logo-img me-2" />
+      </router-link>
 
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
         aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+      <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav align-items-center">
-          <!-- Sessão de Produtos -->
+
+          <!-- Produtos e Relatórios -->
+          <li class="nav-item">
+            <router-link to="/home" class="nav-link" active-class="active">
+              <i class="fa fa-home me-1"></i> Home
+            </router-link>
+          </li>
+
           <li class="nav-item">
             <router-link to="/produtos" class="nav-link" active-class="active">
               <i class="fa fa-cogs me-1"></i> Produtos
@@ -21,33 +33,16 @@
             </router-link>
           </li>
 
-          <!-- Divisor visual -->
+          <!-- Divisor -->
           <li class="nav-divider"></li>
 
-          <!-- Título da seção de Gado -->
+          <!-- Bovinos -->
           <li class="nav-section-title">
-            <span><i class="fa fa-cow me-1"></i> Bovinos</span>
+            <i class="fa fa-cow me-1"></i> Bovinos
           </li>
-
-          <!-- Links da seção Bovinos -->
           <li class="nav-item">
-            <router-link to="/contagem" class="nav-link" active-class="active">
+            <router-link to="/contagemPasto" class="nav-link" active-class="active">
               <i class="fa fa-list me-1"></i> Contagem Pasto
-            </router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/add-pasto" class="nav-link" active-class="active">
-              <i class="fa fa-plus-circle me-1"></i> Adicionar Pasto
-            </router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/contagem-confinamento" class="nav-link" active-class="active">
-              <i class="fa fa-list me-1"></i> Contagem Confinamento
-            </router-link>
-          </li>
-          <li class="nav-item">
-            <router-link to="/add-confinamento" class="nav-link" active-class="active">
-              <i class="fa fa-plus-circle me-1"></i> Adicionar Confinamento
             </router-link>
           </li>
         </ul>
@@ -64,38 +59,66 @@ export default {
 
 <style scoped>
 .navbar {
+  background-color: #ffffff;
   padding: 0.7rem 1rem;
   font-family: 'Segoe UI', sans-serif;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.container-fluid {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .navbar-brand {
   font-weight: 600;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
+  color: #004080;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  height: 40px;
+  width: auto;
+}
+
+.navbar-collapse {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
 }
 
 .navbar-nav {
   display: flex;
+  align-items: center;
+  gap: 1rem;
   flex-wrap: wrap;
 }
 
 .nav-item {
-  margin-right: 15px;
+  display: flex;
+  align-items: center;
 }
 
 .nav-link {
+  display: flex;
+  align-items: center;
   position: relative;
-  color: #f8f9fa;
+  color: #004080;
   transition: all 0.3s ease;
   font-weight: 500;
   letter-spacing: 0.5px;
 }
 
 .nav-link:hover {
-  color: #00bcd4;
+  color: #007BFF;
 }
 
 .nav-link.active {
-  color: #00bcd4;
+  color: #007BFF;
   font-weight: 600;
 }
 
@@ -104,7 +127,7 @@ export default {
   position: absolute;
   width: 100%;
   height: 2px;
-  background: #00bcd4;
+  background: #007BFF;
   bottom: 0;
   left: 0;
   transform: scaleX(0);
@@ -117,30 +140,37 @@ export default {
   transform-origin: bottom left;
 }
 
-/* Seção Bovinos */
 .nav-section-title {
   font-weight: bold;
-  color: #ccc;
+  color: #6c757d;
   margin: 0 1rem;
   text-transform: uppercase;
   font-size: 0.85rem;
+  display: flex;
+  align-items: center;
 }
 
 .nav-divider {
   width: 1px;
   height: 30px;
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: #ccc;
   margin: 0 1rem;
+  align-self: center;
 }
 
-/* Mobile */
 @media (max-width: 991px) {
+  .navbar-collapse {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .nav-item {
     margin: 0.5rem 0;
   }
 
-  .navbar-collapse {
-    justify-content: flex-start;
+  .logo-img {
+    height: 35px;
   }
 }
+
 </style>

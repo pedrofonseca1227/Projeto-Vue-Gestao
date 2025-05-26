@@ -1,21 +1,21 @@
 <template>
   <div id="app">
-    <NavbarComponent /> <!-- Use o nome correto aqui -->
+    <!-- Só exibe a Navbar se a rota não for '/' -->
+    <NavbarComponent v-if="$route.path !== '/'" />
+
     <div class="container mt-4">
-      <router-view /> <!-- Aqui são carregadas as páginas dinamicamente -->
+      <router-view /> <!-- Renderiza dinamicamente a view atual -->
     </div>
   </div>
 </template>
 
 <script>
-import { RouterView } from 'vue-router';
-import NavbarComponent from '@/components/NavbarComponent.vue'; // Certifique-se de que o nome do arquivo e o nome do componente correspondam
+import NavbarComponent from '@/components/NavbarComponent.vue';
 
 export default {
   components: {
-    NavbarComponent,  // Use o nome correto do componente
-    RouterView,
-  },
+    NavbarComponent
+  }
 };
 </script>
 
