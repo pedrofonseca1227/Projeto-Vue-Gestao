@@ -45,6 +45,16 @@
               <i class="fa fa-list me-1"></i> Contagem Pasto
             </router-link>
           </li>
+          <li class="nav-item">
+            <router-link to="/Confinamento" class="nav-link" active-class="active">
+              <i class="fa fa-plus me-1"></i> Confinamento
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/vendaConfinamento" class="nav-link" active-class="active">
+              <i class="fa fa-plus me-1"></i> Vendas Confinamento
+            </router-link>
+          </li>
         </ul>
       </div>
     </div>

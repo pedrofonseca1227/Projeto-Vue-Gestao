@@ -15,7 +15,7 @@
       </div>
 
     <!-- Campo de Pesquisa -->
-    <div class="row mb-3">
+    <div class="row mb-3">d
       <div class="col-md-6 offset-md-3">  
         <input
           v-model="filtro.nome"

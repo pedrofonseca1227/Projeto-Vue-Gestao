@@ -7,6 +7,10 @@ import ReportsPage from '@/views/ReportsPage.vue';
 import EditProduct from '@/components/EditProduct.vue';
 import AdicionarPasto from '@/views/AdicionarPasto.vue';
 import ContagemPasto from '@/views/ContagemPasto.vue';
+import VendaConfinamento from '@/views/VendaConfinamento.vue';
+import ConfinamentoPage from '@/views/ConfinamentoPage.vue';
+import AdicionarConfinamento from '@/views/AdicionarConfinamento.vue';
+
 
 const routes = [
   { path: '/', component: LoginPage },
@@ -17,6 +21,9 @@ const routes = [
   { path: '/editar-produto/:id', component: EditProduct },
   { path: '/add-pasto', component: AdicionarPasto },
   { path: '/contagemPasto', component: ContagemPasto },
+  { path: '/vendaConfinamento', component: VendaConfinamento },
+  { path: '/confinamento', component: ConfinamentoPage },
+  { path: '/adicionarConfinamento', component: AdicionarConfinamento },
 ];
 
 const router = createRouter({
