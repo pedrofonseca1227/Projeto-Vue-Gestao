@@ -47,7 +47,7 @@ export default {
   methods: {
     handleLogin() {
       // Validação de login simples
-      if (this.username === 'admin' && this.password === 'senha123') {
+      if (this.username === 'adminfazenda' && this.password === 'LADFF123') {
         localStorage.setItem('isAuthenticated', 'true');
         this.$router.push('/home');
       } else {
