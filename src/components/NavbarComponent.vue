@@ -4,7 +4,7 @@
 
       <!-- Logo -->
       <router-link to="/" class="navbar-brand d-flex align-items-center">
-        <img src="../../assets/Logo.png" alt="Logo" class="logo-img me-2" />
+        <img :src="require('@/assets/Logo.png')" alt="Logo" class="logo-img me-2" />
       </router-link>
 
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
