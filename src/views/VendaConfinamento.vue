@@ -73,10 +73,28 @@
       {{ mensagemSucesso }}
     </div>
 
+    <!-- Filtros -->
+    <div class="row mt-5 mb-4">
+      <div class="col-md-3">
+        <label for="mes" class="form-label">Mês</label>
+        <select v-model="filtro.mes" class="form-select">
+          <option value="">Todos</option>
+          <option v-for="(mes, index) in meses" :key="index" :value="index + 1">{{ mes }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label for="ano" class="form-label">Ano</label>
+        <input type="number" v-model="filtro.ano" class="form-control" placeholder="Ex: 2025" />
+      </div>
+      <div class="col-md-3 align-self-end">
+        <button @click="gerarPDF" class="btn btn-danger w-100">📄 Exportar PDF</button>
+      </div>
+    </div>
+
     <!-- Tabela de vendas -->
-    <div class="mt-5">
+    <div>
       <h4 class="fw-bold mb-3">📊 Relatório de Vendas Registradas</h4>
-      <div v-if="vendas.length === 0" class="text-muted">Nenhuma venda registrada ainda.</div>
+      <div v-if="vendasFiltradas.length === 0" class="text-muted">Nenhuma venda encontrada.</div>
       <table v-else class="table table-striped table-bordered">
         <thead class="table-dark">
           <tr>
@@ -88,7 +106,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="venda in vendas" :key="venda.id">
+          <tr v-for="venda in vendasFiltradas" :key="venda.id">
             <td>{{ formatarData(venda.dataVenda) }}</td>
             <td>{{ venda.categoria }}</td>
             <td>{{ venda.quantidade }}</td>
@@ -102,7 +120,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { db } from '../firebase/firebase'
 import {
   collection,
@@ -112,6 +130,9 @@ import {
   orderBy,
   serverTimestamp
 } from 'firebase/firestore'
+
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 export default {
   setup() {
@@ -125,6 +146,16 @@ export default {
 
     const mensagemSucesso = ref('')
     const vendas = ref([])
+
+    const filtro = ref({
+      mes: '',
+      ano: ''
+    })
+
+    const meses = [
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+    ]
 
     const carregarVendas = async () => {
       try {
@@ -165,6 +196,41 @@ export default {
       return data.toLocaleDateString('pt-BR')
     }
 
+    const vendasFiltradas = computed(() => {
+      return vendas.value.filter(venda => {
+        const data = new Date(venda.dataVenda)
+        const mes = data.getMonth() + 1
+        const ano = data.getFullYear()
+
+        const filtroMes = !filtro.value.mes || mes === filtro.value.mes
+        const filtroAno = !filtro.value.ano || ano === Number(filtro.value.ano)
+
+        return filtroMes && filtroAno
+      })
+    })
+
+    const gerarPDF = () => {
+      const doc = new jsPDF()
+      doc.setFontSize(16)
+      doc.text('Relatório de Vendas de Gado', 14, 20)
+
+      const linhas = vendasFiltradas.value.map(venda => [
+        formatarData(venda.dataVenda),
+        venda.categoria,
+        venda.quantidade,
+        `R$ ${venda.precoArroba.toFixed(2)}`,
+        venda.comprador
+      ])
+
+      autoTable(doc, {
+        head: [['Data', 'Categoria', 'Quantidade', 'Preço Arroba', 'Comprador']],
+        body: linhas,
+        startY: 30
+      })
+
+      doc.save('relatorio-vendas.pdf')
+    }
+
     onMounted(() => {
       carregarVendas()
     })
@@ -174,7 +240,11 @@ export default {
       registrarVenda,
       mensagemSucesso,
       vendas,
-      formatarData
+      formatarData,
+      filtro,
+      meses,
+      vendasFiltradas,
+      gerarPDF
     }
   }
 }

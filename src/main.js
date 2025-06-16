@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';  // Importe o router que acabamos de configurar
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap';
 
 
 createApp(App)

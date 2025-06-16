@@ -7,15 +7,24 @@
         <img :src="require('@/assets/Logo.png')" alt="Logo" class="logo-img me-2" />
       </router-link>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <!-- Botão de colapso (mobile) -->
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarNav"
+        aria-controls="navbarNav"
+        aria-expanded="false"
+        aria-label="Toggle navigation"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
 
+      <!-- Itens da navbar -->
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav align-items-center">
 
-          <!-- Produtos e Relatórios -->
+          <!-- Links principais -->
           <li class="nav-item">
             <router-link to="/home" class="nav-link" active-class="active">
               <i class="fa fa-home me-1"></i> Home
@@ -27,6 +36,7 @@
               <i class="fa fa-cogs me-1"></i> Produtos
             </router-link>
           </li>
+
           <li class="nav-item">
             <router-link to="/relatorios" class="nav-link" active-class="active">
               <i class="fa fa-file-alt me-1"></i> Relatórios
@@ -36,25 +46,35 @@
           <!-- Divisor -->
           <li class="nav-divider"></li>
 
-          <!-- Bovinos -->
+          <!-- Seção de bovinos -->
           <li class="nav-section-title">
             <i class="fa fa-cow me-1"></i> Bovinos
           </li>
+
           <li class="nav-item">
             <router-link to="/contagemPasto" class="nav-link" active-class="active">
               <i class="fa fa-list me-1"></i> Contagem Pasto
             </router-link>
           </li>
+
           <li class="nav-item">
             <router-link to="/Confinamento" class="nav-link" active-class="active">
               <i class="fa fa-plus me-1"></i> Confinamento
             </router-link>
           </li>
+
           <li class="nav-item">
             <router-link to="/vendaConfinamento" class="nav-link" active-class="active">
               <i class="fa fa-plus me-1"></i> Vendas Confinamento
             </router-link>
           </li>
+
+          <li class="nav-item">
+            <router-link to="/registrarVenda" class="nav-link" active-class="active">
+              <i class="fa fa-plus me-1"></i> Registro Vendas
+            </router-link>
+          </li>
+
         </ul>
       </div>
     </div>
@@ -64,7 +84,7 @@
 <script>
 export default {
   name: 'NavbarComponent',
-};
+}
 </script>
 
 <style scoped>
@@ -93,12 +113,6 @@ export default {
 .logo-img {
   height: 40px;
   width: auto;
-}
-
-.navbar-collapse {
-  display: flex !important;
-  justify-content: center;
-  align-items: center;
 }
 
 .navbar-nav {
@@ -168,6 +182,12 @@ export default {
   align-self: center;
 }
 
+/* Correção: não forçar display para que colapso funcione */
+.navbar-collapse {
+  justify-content: center;
+  align-items: center;
+}
+
 @media (max-width: 991px) {
   .navbar-collapse {
     flex-direction: column;
@@ -182,5 +202,4 @@ export default {
     height: 35px;
   }
 }
-
 </style>

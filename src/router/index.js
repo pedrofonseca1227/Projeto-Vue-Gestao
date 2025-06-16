@@ -10,6 +10,7 @@ import ContagemPasto from '@/views/ContagemPasto.vue';
 import VendaConfinamento from '@/views/VendaConfinamento.vue';
 import ConfinamentoPage from '@/views/ConfinamentoPage.vue';
 import AdicionarConfinamento from '@/views/AdicionarConfinamento.vue';
+import RegistrarVenda from '@/views/RegistrarVenda.vue';
 
 
 const routes = [
@@ -24,6 +25,7 @@ const routes = [
   { path: '/vendaConfinamento', component: VendaConfinamento },
   { path: '/confinamento', component: ConfinamentoPage },
   { path: '/adicionarConfinamento', component: AdicionarConfinamento },
+  { path: '/registrarVenda', component: RegistrarVenda },
 ];
 
 const router = createRouter({
