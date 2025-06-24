@@ -1,153 +1,141 @@
 <template>
   <div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold">📋 Gado Confinamento</h2>
-      <router-link to="/adicionarconfinamento" class="btn btn-success">
-        ➕ Adicionar Gado
-      </router-link>
-    </div>
+    <h2 class="mb-4 fw-bold text-center">Cadastro de Lotes Confinados</h2>
 
-    <!-- Tabela de registros -->
-    <div v-if="registros.length" class="mt-4">
-      <div class="alert alert-success text-center fw-bold">
-        🐂 Total no Confinamento: {{ totalGado }} cabeças
+    <!-- Formulário de novo lote -->
+    <form @submit.prevent="cadastrarLote" class="card p-4 shadow-sm mb-4">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">ID do Lote</label>
+          <input v-model="form.id" class="form-control" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Quantidade de Animais</label>
+          <input v-model.number="form.quantidade" type="number" class="form-control" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Data de Entrada</label>
+          <input v-model="form.dataEntrada" type="date" class="form-control" required />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">Peso Inicial (kg)</label>
+          <input v-model.number="form.pesoInicial" type="number" step="0.1" class="form-control" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Raça</label>
+          <input v-model="form.raca" class="form-control" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Categoria</label>
+          <input v-model="form.categoria" class="form-control" required />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">GPD (kg/dia)</label>
+          <input v-model.number="form.gpd" type="number" step="0.01" class="form-control" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Dias no Confinamento</label>
+          <input v-model.number="form.diasConfinamento" type="number" class="form-control" required />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Linha (opcional)</label>
+          <input v-model="form.linha" class="form-control" />
+        </div>
       </div>
-      <h5 class="mb-3">📊 Registros Feed Manager</h5>
-      <div class="table-responsive">
-        <table class="table table-bordered table-striped table-sm">
-          <thead class="table-dark text-center">
-            <tr>
-              <th>Lote</th>
-              <th>Curral</th>
-              <th>Raça</th>
-              <th>Sexo</th>
-              <th>Origem</th>
-              <th>Qtd</th>
-              <th>Data Entrada</th>
-              <th>Dias Conf.</th>
-              <th>Peso Entrada</th>
-              <th>Peso Prévia</th>
-              <th>Peso Hoje</th>
-              <th>Dieta/GPD</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody class="text-center">
-            <tr v-for="registro in registros" :key="registro.id">
-              <td>{{ registro.Lote }}</td>
-              <td>{{ registro.Curral }}</td>
-              <td>{{ registro.Raca }}</td>
-              <td>{{ registro.Sexo }}</td>
-              <td>{{ registro.Origem }}</td>
-              <td>{{ registro.Quantidade }}</td>
-              <td>{{ registro.Data_Entrada }}</td>
-              <td>{{ registro.Dias_Confinamento }}</td>
-              <td>{{ registro.Peso_Entrada }}</td>
-              <td>{{ registro.Peso_Previa }}</td>
-              <td>{{ registro.Peso_Hoje }}</td>
-              <td>{{ registro.Dieta_GPD }}</td>
-              <td>
-                <button @click="excluirRegistro(registro.id)" class="btn btn-danger btn-sm">
-                  Excluir
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+
+      <div class="d-grid mt-4">
+        <button class="btn btn-success">Cadastrar Lote</button>
       </div>
+    </form>
+
+    <!-- Listagem de lotes cadastrados -->
+    <div v-if="lotes.length" class="card p-3">
+      <h5 class="mb-3">Lotes Ativos</h5>
+      <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+          <tr>
+            <th>ID</th>
+            <th>Entrada</th>
+            <th>Qtde</th>
+            <th>Peso Inicial</th>
+            <th>GPD</th>
+            <th>Dias</th>
+            <th>Categoria</th>
+            <th>Raça</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="lote in lotes" :key="lote.id">
+            <td>{{ lote.id }}</td>
+            <td>{{ lote.dataEntrada }}</td>
+            <td>{{ lote.quantidade }}</td>
+            <td>{{ lote.pesoInicial }} kg</td>
+            <td>{{ lote.gpd }}</td>
+            <td>{{ lote.diasConfinamento }}</td>
+            <td>{{ lote.categoria }}</td>
+            <td>{{ lote.raca }}</td>
+            <td>
+              <span class="badge" :class="lote.diasConfinamento >= 90 ? 'bg-success' : 'bg-warning'">
+                {{ lote.diasConfinamento >= 90 ? 'Pronto p/ Venda' : 'Em Confinamento' }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    <p v-else class="text-center text-muted mt-4">Nenhum dado encontrado na coleção.</p>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
-import { getFirestore, collection, getDocs, doc, deleteDoc } from 'firebase/firestore'
-import { app } from '@/firebase/firebase'
+import { ref, onMounted } from 'vue'
+import { db } from '@/firebase/firebase'
+import { collection, addDoc, getDocs } from 'firebase/firestore'
 
 export default {
-  name: 'ConfinamentoPage',
   setup() {
-    const registros = ref([])
-
-    const carregarDados = async () => {
-      try {
-        const db = getFirestore(app)
-        const querySnapshot = await getDocs(collection(db, 'ConfinamentoGado'))
-        registros.value = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-      } catch (error) {
-        console.error('Erro ao carregar dados do Firestore:', error)
-      }
-    }
-
-    const excluirRegistro = async (id) => {
-      try {
-        const db = getFirestore(app)
-        await deleteDoc(doc(db, 'ConfinamentoGado', id))
-        registros.value = registros.value.filter(item => item.id !== id)
-      } catch (error) {
-        console.error('Erro ao excluir registro:', error)
-      }
-    }
-
-    const totalGado = computed(() => {
-      return registros.value.reduce((total, item) => {
-        return total + (parseInt(item.Quantidade) || 0)
-      }, 0)
+    const form = ref({
+      id: '',
+      quantidade: null,
+      dataEntrada: '',
+      pesoInicial: null,
+      raca: '',
+      categoria: '',
+      gpd: null,
+      diasConfinamento: null,
+      linha: ''
     })
+
+    const lotes = ref([])
+
+    const carregarLotes = async () => {
+      const snapshot = await getDocs(collection(db, 'LotesConfinamento'))
+      lotes.value = snapshot.docs.map(doc => doc.data())
+    }
+
+    const cadastrarLote = async () => {
+      await addDoc(collection(db, 'LotesConfinamento'), form.value)
+      await carregarLotes()
+      form.value = {
+        id: '', quantidade: null, dataEntrada: '', pesoInicial: null,
+        raca: '', categoria: '', gpd: null, diasConfinamento: null, linha: ''
+      }
+    }
 
     onMounted(() => {
-      carregarDados()
+      carregarLotes()
     })
 
-    return {
-      registros,
-      totalGado,
-      excluirRegistro
-    }
+    return { form, cadastrarLote, lotes }
   }
 }
 </script>
 
 <style scoped>
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 30px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  overflow: hidden;
-  font-size: 0.9rem;
-}
-
-table th {
-  background-color: #198754;
-  color: white;
-  padding: 12px;
+.table td, .table th {
+  vertical-align: middle;
   text-align: center;
-  text-transform: uppercase;
-}
-
-table td {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-tr:hover {
-  background-color: #f1f1f1;
-}
-
-.alert {
-  font-size: 1.1rem;
-}
-
-.btn-danger {
-  padding: 4px 8px;
-  font-size: 0.8rem;
 }
 </style>
