@@ -1,73 +1,75 @@
 <template>
   <div class="container mt-5">
-    <h2 class="mb-4 fw-bold text-center">Finalizar Lotes e Calcular Lucro</h2>
+    <h2 class="text-center fw-bold mb-4">📦 Registrar Venda de Lote</h2>
 
-    <!-- Seleção do lote pronto para venda -->
-    <div class="mb-4">
-      <label class="form-label">Selecione um lote (>= 90 dias)</label>
-      <select v-model="loteSelecionadoId" class="form-select">
-        <option disabled value="">-- Escolha o lote --</option>
-        <option v-for="lote in lotesProntos" :key="lote.id" :value="lote.id">
-          {{ lote.id }} - {{ lote.quantidade }} animais
-        </option>
-      </select>
+    <div class="card p-4 shadow-sm mb-5">
+      <div class="mb-3">
+        <label class="form-label">Selecione um lote (>= 90 dias)</label>
+        <select v-model="loteSelecionadoId" class="form-select" required>
+          <option disabled value="">Escolha um lote</option>
+          <option v-for="l in lotesElegiveis" :key="l.id" :value="l.id">
+            {{ l.id }} - {{ l.quantidade }} cabeças - Entrada: {{ formatarData(l.dataEntrada) }}
+          </option>
+        </select>
+      </div>
+
+      <div v-if="loteSelecionado" class="mt-3">
+        <p><strong>Raça:</strong> {{ loteSelecionado.raca }}</p>
+        <p><strong>Categoria:</strong> {{ loteSelecionado.categoria }}</p>
+        <p><strong>Quantidade:</strong> {{ loteSelecionado.quantidade }}</p>
+        <p><strong>Data de Entrada:</strong> {{ formatarData(loteSelecionado.dataEntrada) }}</p>
+
+        <div class="mb-3">
+          <label class="form-label">Selecione o ciclo de gastos</label>
+          <select v-model="cicloSelecionadoId" class="form-select" required>
+            <option disabled value="">Escolha um ciclo</option>
+            <option v-for="ciclo in ciclos" :key="ciclo.id" :value="ciclo.id">
+              {{ formatarData(ciclo.inicio) }} a {{ formatarData(ciclo.fim) }} - R$ {{ ciclo.total.toFixed(2) }}
+            </option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Preço acordado da arroba (R$)</label>
+          <input v-model.number="precoArroba" type="number" step="0.01" class="form-control" required />
+        </div>
+
+        <div class="alert alert-info">
+          <p><strong>Receita Estimada:</strong> R$ {{ receitaEstimada.toFixed(2) }}</p>
+          <p><strong>Custo Estimado:</strong> R$ {{ custoEstimado.toFixed(2) }}</p>
+          <p><strong>Lucro Estimado:</strong> R$ {{ lucroEstimado.toFixed(2) }}</p>
+        </div>
+
+        <button class="btn btn-success w-100" @click="registrarVenda">✅ Registrar Venda</button>
+      </div>
     </div>
 
-    <!-- Formulário de gastos e peso final -->
-    <form v-if="loteSelecionado" @submit.prevent class="card p-4 shadow-sm">
-      <div class="row g-3">
-        <div class="col-md-4">
-          <label class="form-label">Peso Final Estimado (kg)</label>
-          <input v-model.number="form.pesoFinal" type="number" class="form-control" required />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Preço da Arroba (R$)</label>
-          <input v-model.number="form.precoArroba" type="number" class="form-control" required />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Custo com Ração (R$)</label>
-          <input v-model.number="form.racao" type="number" class="form-control" required />
-        </div>
+    <div v-if="mensagem" class="alert alert-success text-center">{{ mensagem }}</div>
 
-        <div class="col-md-4">
-          <label class="form-label">Custo de Compra (R$)</label>
-          <input v-model.number="form.compra" type="number" class="form-control" required />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Funcionários (R$)</label>
-          <input v-model.number="form.funcionarios" type="number" class="form-control" required />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Diesel (R$)</label>
-          <input v-model.number="form.diesel" type="number" class="form-control" required />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Energia (R$)</label>
-          <input v-model.number="form.energia" type="number" class="form-control" required />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Água (R$)</label>
-          <input v-model.number="form.agua" type="number" class="form-control" required />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Manutenção (R$)</label>
-          <input v-model.number="form.manutencao" type="number" class="form-control" required />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Frete (R$)</label>
-          <input v-model.number="form.frete" type="number" class="form-control" required />
-        </div>
-      </div>
-    </form>
-
-    <!-- Resultado -->
-    <div v-if="loteSelecionado" class="card mt-4 p-4">
-      <h5 class="mb-3">Resultado Financeiro</h5>
-      <p><strong>Arrobas por animal:</strong> {{ arrobasPorAnimal.toFixed(2) }}</p>
-      <p><strong>Receita por animal:</strong> R$ {{ receitaPorAnimal.toFixed(2) }}</p>
-      <p><strong>Custo total por animal:</strong> R$ {{ custoPorAnimal.toFixed(2) }}</p>
-      <p><strong>Lucro por animal:</strong> R$ {{ lucroPorAnimal.toFixed(2) }}</p>
-      <p><strong>Lucro total do lote:</strong> R$ {{ lucroTotalLote.toFixed(2) }}</p>
+    <div class="mt-5">
+      <h5 class="fw-bold mb-3 text-center">📄 Histórico de Vendas</h5>
+      <table class="table table-bordered" v-if="historico.length">
+        <thead class="table-dark">
+          <tr>
+            <th>Data</th>
+            <th>Lote</th>
+            <th>Qtde</th>
+            <th>Receita</th>
+            <th>Custo</th>
+            <th>Lucro</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="v in historico" :key="v.id">
+            <td>{{ formatarData(v.dataVenda) }}</td>
+            <td>{{ v.lote }}</td>
+            <td>{{ v.quantidade }}</td>
+            <td>R$ {{ v.receita.toFixed(2) }}</td>
+            <td>R$ {{ v.custo.toFixed(2) }}</td>
+            <td>R$ {{ v.lucro.toFixed(2) }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </template>
@@ -75,77 +77,167 @@
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { db } from '@/firebase/firebase'
-import { collection, getDocs } from 'firebase/firestore'
+import {
+  collection, getDocs, doc, deleteDoc, addDoc, Timestamp, query, orderBy
+} from 'firebase/firestore'
 
 export default {
   setup() {
     const loteSelecionadoId = ref('')
+    const cicloSelecionadoId = ref('')
+    const precoArroba = ref(null)
     const lotes = ref([])
-
-    const form = ref({
-      pesoFinal: null,
-      precoArroba: null,
-      racao: null,
-      compra: null,
-      funcionarios: null,
-      diesel: null,
-      energia: null,
-      agua: null,
-      manutencao: null,
-      frete: null
-    })
+    const ciclos = ref([])
+    const historico = ref([])
+    const mensagem = ref('')
 
     const carregarLotes = async () => {
-      const snapshot = await getDocs(collection(db, 'LotesConfinamento'))
-      lotes.value = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      const snap = await getDocs(collection(db, 'LotesConfinamento'))
+      lotes.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
     }
 
-    const loteSelecionado = computed(() => {
-      return lotes.value.find(l => l.id === loteSelecionadoId.value)
+    const carregarCiclos = async () => {
+      const snap = await getDocs(collection(db, 'GastosTrimestrais'))
+      ciclos.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    }
+
+    const carregarHistorico = async () => {
+      const q = query(collection(db, 'RegistroVendasLotes'), orderBy('dataVenda', 'desc'))
+      const snap = await getDocs(q)
+      historico.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    }
+
+    const loteSelecionado = computed(() => lotes.value.find(l => l.id === loteSelecionadoId.value))
+    const cicloSelecionado = computed(() => ciclos.value.find(c => c.id === cicloSelecionadoId.value))
+
+    const lotesElegiveis = computed(() => lotes.value.filter(l => l.diasConfinamento >= 90))
+
+    const receitaEstimada = computed(() => {
+      if (!loteSelecionado.value || !precoArroba.value) return 0
+      const pesoFinal = loteSelecionado.value.pesoInicial + (loteSelecionado.value.gpd * loteSelecionado.value.diasConfinamento)
+      const pesoTotal = pesoFinal * loteSelecionado.value.quantidade
+      const arrobas = pesoTotal / 15
+      return arrobas * precoArroba.value
     })
 
-    const lotesProntos = computed(() => {
-      return lotes.value.filter(l => l.diasConfinamento >= 90)
+    const custoEstimado = computed(() => {
+      if (!cicloSelecionado.value || !loteSelecionado.value) return 0
+      const custoPorAnimal = cicloSelecionado.value.total / cicloSelecionado.value.mediaAnimais
+      return loteSelecionado.value.quantidade * custoPorAnimal
     })
 
-    const arrobasPorAnimal = computed(() => {
-      return loteSelecionado.value ? form.value.pesoFinal / 15 : 0
-    })
+    const lucroEstimado = computed(() => receitaEstimada.value - custoEstimado.value)
 
-    const receitaPorAnimal = computed(() => {
-      return arrobasPorAnimal.value * form.value.precoArroba
-    })
+    const formatarData = (d) => {
+      const data = d?.toDate?.() || new Date(d)
+      return data.toLocaleDateString('pt-BR')
+    }
 
-    const custoPorAnimal = computed(() => {
-      const total = form.value.racao + form.value.compra + form.value.funcionarios +
-        form.value.diesel + form.value.energia + form.value.agua + form.value.manutencao + form.value.frete
-      return total / loteSelecionado.value.quantidade
-    })
+    const registrarVenda = async () => {
+      if (!loteSelecionado.value || !cicloSelecionado.value || !precoArroba.value) return
 
-    const lucroPorAnimal = computed(() => receitaPorAnimal.value - custoPorAnimal.value)
-    const lucroTotalLote = computed(() => lucroPorAnimal.value * loteSelecionado.value.quantidade)
+      const venda = {
+        lote: loteSelecionado.value.id,
+        quantidade: loteSelecionado.value.quantidade,
+        receita: receitaEstimada.value,
+        custo: custoEstimado.value,
+        lucro: lucroEstimado.value,
+        dataVenda: Timestamp.now()
+      }
+
+      await addDoc(collection(db, 'RegistroVendasLotes'), venda)
+      await deleteDoc(doc(db, 'LotesConfinamento', loteSelecionado.value.id))
+      mensagem.value = '✅ Venda registrada com sucesso!'
+      loteSelecionadoId.value = ''
+      cicloSelecionadoId.value = ''
+      precoArroba.value = null
+      await carregarLotes()
+      await carregarHistorico()
+      setTimeout(() => (mensagem.value = ''), 4000)
+    }
 
     onMounted(() => {
       carregarLotes()
+      carregarCiclos()
+      carregarHistorico()
     })
 
     return {
       loteSelecionadoId,
+      cicloSelecionadoId,
+      precoArroba,
+      lotesElegiveis,
       loteSelecionado,
-      lotesProntos,
-      form,
-      arrobasPorAnimal,
-      receitaPorAnimal,
-      custoPorAnimal,
-      lucroPorAnimal,
-      lucroTotalLote
+      cicloSelecionado,
+      receitaEstimada,
+      custoEstimado,
+      lucroEstimado,
+      registrarVenda,
+      formatarData,
+      historico,
+      mensagem,
+      ciclos
     }
   }
 }
 </script>
 
 <style scoped>
-label {
-  font-weight: 500;
+.container {
+  max-width: 900px;
+}
+
+h2, h5 {
+  color: #004080;
+}
+
+.card {
+  border-radius: 12px;
+  border: 1px solid #dfe3e6;
+}
+
+.form-label {
+  font-weight: 600;
+  color: #333;
+}
+
+.btn-success {
+  font-weight: bold;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 1rem;
+}
+
+.alert-info {
+  border-radius: 10px;
+  background-color: #eaf4ff;
+  border: 1px solid #b3daff;
+  color: #004080;
+  font-size: 0.95rem;
+}
+
+.table {
+  font-size: 0.9rem;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table th,
+.table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.table th {
+  background-color: #004080;
+  color: white;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f8f9fa;
+}
+
+.table-bordered {
+  border-radius: 8px;
 }
 </style>

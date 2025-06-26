@@ -1,8 +1,9 @@
 <template>
   <div class="container mt-5">
-    <h2 class="mb-4 fw-bold text-center">Cadastro de Lotes Confinados</h2>
+    <h2 class="mb-4 fw-bold text-center text-primary">Cadastro de Lotes Confinados</h2>
 
     <!-- Formulário de novo lote -->
+    <h4 class="text-primary border-bottom pb-2 mb-3">📋 Novo Lote</h4>
     <form @submit.prevent="cadastrarLote" class="card p-4 shadow-sm mb-4">
       <div class="row g-3">
         <div class="col-md-4">
@@ -23,21 +24,21 @@
           <input v-model.number="form.pesoInicial" type="number" step="0.1" class="form-control" required />
         </div>
         <div class="col-md-4">
+          <label class="form-label">Valor Total da Compra (R$)</label>
+          <input v-model.number="form.valorCompraTotal" type="number" step="0.01" class="form-control" required />
+        </div>
+        <div class="col-md-4">
           <label class="form-label">Raça</label>
           <input v-model="form.raca" class="form-control" required />
         </div>
+
         <div class="col-md-4">
           <label class="form-label">Categoria</label>
           <input v-model="form.categoria" class="form-control" required />
         </div>
-
         <div class="col-md-4">
           <label class="form-label">GPD (kg/dia)</label>
           <input v-model.number="form.gpd" type="number" step="0.01" class="form-control" required />
-        </div>
-        <div class="col-md-4">
-          <label class="form-label">Dias no Confinamento</label>
-          <input v-model.number="form.diasConfinamento" type="number" class="form-control" required />
         </div>
         <div class="col-md-4">
           <label class="form-label">Linha (opcional)</label>
@@ -50,36 +51,40 @@
       </div>
     </form>
 
+    <div v-if="mensagem" class="alert alert-success text-center mt-3">
+      {{ mensagem }}
+    </div>
+
     <!-- Listagem de lotes cadastrados -->
+    <h4 class="text-primary border-bottom pb-2 mb-3 mt-5">📦 Lotes Ativos</h4>
     <div v-if="lotes.length" class="card p-3">
-      <h5 class="mb-3">Lotes Ativos</h5>
-      <table class="table table-bordered table-striped">
+      <table class="table table-bordered table-striped table-hover table-striped">
         <thead class="table-dark">
           <tr>
             <th>ID</th>
             <th>Entrada</th>
-            <th>Qtde</th>
-            <th>Peso Inicial</th>
-            <th>GPD</th>
             <th>Dias</th>
-            <th>Categoria</th>
-            <th>Raça</th>
+            <th>Qtde</th>
+            <th>P. Inicial</th>
+            <th>P. Final Est.</th>
+            <th>Valor Compra</th>
+            <th>GPD</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="lote in lotes" :key="lote.id">
             <td>{{ lote.id }}</td>
-            <td>{{ lote.dataEntrada }}</td>
+            <td>{{ formatarData(lote.dataEntrada) }}</td>
+            <td>{{ calcularDiasConfinamento(lote.dataEntrada) }}</td>
             <td>{{ lote.quantidade }}</td>
             <td>{{ lote.pesoInicial }} kg</td>
+            <td>{{ calcularPesoFinal(lote) }} kg</td>
+            <td>R$ {{ lote.valorCompraTotal?.toFixed(2) }}</td>
             <td>{{ lote.gpd }}</td>
-            <td>{{ lote.diasConfinamento }}</td>
-            <td>{{ lote.categoria }}</td>
-            <td>{{ lote.raca }}</td>
             <td>
-              <span class="badge" :class="lote.diasConfinamento >= 90 ? 'bg-success' : 'bg-warning'">
-                {{ lote.diasConfinamento >= 90 ? 'Pronto p/ Venda' : 'Em Confinamento' }}
+              <span class="badge" :class="calcularDiasConfinamento(lote.dataEntrada) >= 90 ? 'bg-success' : 'bg-warning'">
+                {{ calcularDiasConfinamento(lote.dataEntrada) >= 90 ? 'Pronto p/ Venda' : 'Em Confinamento' }}
               </span>
             </td>
           </tr>
@@ -92,7 +97,7 @@
 <script>
 import { ref, onMounted } from 'vue'
 import { db } from '@/firebase/firebase'
-import { collection, addDoc, getDocs } from 'firebase/firestore'
+import { collection, addDoc, getDocs, Timestamp } from 'firebase/firestore'
 
 export default {
   setup() {
@@ -101,14 +106,15 @@ export default {
       quantidade: null,
       dataEntrada: '',
       pesoInicial: null,
+      valorCompraTotal: null,
       raca: '',
       categoria: '',
       gpd: null,
-      diasConfinamento: null,
       linha: ''
     })
 
     const lotes = ref([])
+    const mensagem = ref('')
 
     const carregarLotes = async () => {
       const snapshot = await getDocs(collection(db, 'LotesConfinamento'))
@@ -116,19 +122,42 @@ export default {
     }
 
     const cadastrarLote = async () => {
-      await addDoc(collection(db, 'LotesConfinamento'), form.value)
+      const doc = {
+        ...form.value,
+        dataEntrada: Timestamp.fromDate(new Date(form.value.dataEntrada)),
+        createdAt: Timestamp.now()
+      }
+      await addDoc(collection(db, 'LotesConfinamento'), doc)
       await carregarLotes()
       form.value = {
         id: '', quantidade: null, dataEntrada: '', pesoInicial: null,
-        raca: '', categoria: '', gpd: null, diasConfinamento: null, linha: ''
+        valorCompraTotal: null, raca: '', categoria: '', gpd: null, linha: ''
       }
+      mensagem.value = '✅ Lote cadastrado com sucesso!'
+      setTimeout(() => mensagem.value = '', 4000)
+    }
+
+    const calcularDiasConfinamento = (dataEntrada) => {
+      const entrada = dataEntrada.toDate ? dataEntrada.toDate() : new Date(dataEntrada)
+      const hoje = new Date()
+      return Math.floor((hoje - entrada) / (1000 * 60 * 60 * 24))
+    }
+
+    const calcularPesoFinal = (lote) => {
+      const dias = calcularDiasConfinamento(lote.dataEntrada)
+      return (parseFloat(lote.pesoInicial || 0) + (dias * parseFloat(lote.gpd || 0))).toFixed(1)
+    }
+
+    const formatarData = (timestamp) => {
+      const data = timestamp?.toDate?.() || new Date(timestamp)
+      return data.toLocaleDateString('pt-BR')
     }
 
     onMounted(() => {
       carregarLotes()
     })
 
-    return { form, cadastrarLote, lotes }
+    return { form, cadastrarLote, lotes, calcularDiasConfinamento, calcularPesoFinal, formatarData, mensagem }
   }
 }
 </script>
@@ -137,5 +166,36 @@ export default {
 .table td, .table th {
   vertical-align: middle;
   text-align: center;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #f9f9f9;
+}
+
+.table th {
+  background-color: #004080;
+  color: white;
+}
+
+.badge {
+  font-size: 0.8rem;
+  padding: 0.4em 0.6em;
+  border-radius: 12px;
+}
+
+.form-control {
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.btn-success {
+  font-weight: bold;
+  border-radius: 8px;
+  background-color: #28a745;
+  border: none;
+}
+
+h2, h4 {
+  color: #004080;
 }
 </style>

@@ -1,24 +1,43 @@
 <template>
   <div id="app">
-    <!-- Só exibe a Navbar se a rota não for '/' -->
+    <!-- Navbar aparece em todas as rotas, exceto na raiz '/' (ex: tela de login) -->
     <NavbarComponent v-if="$route.path !== '/'" />
 
-    <div class="container mt-4">
-      <router-view /> <!-- Renderiza dinamicamente a view atual -->
-    </div>
+    <main class="layout-content">
+      <router-view />
+    </main>
+
+    <footer v-if="$route.path !== '/'" class="layout-footer text-center text-muted">
+      <small>© {{ new Date().getFullYear() }} Gestão Pecuária - Desenvolvido por Pedro</small>
+    </footer>
   </div>
 </template>
 
 <script>
-import NavbarComponent from '@/components/NavbarComponent.vue';
+import NavbarComponent from '@/components/NavbarComponent.vue'
 
 export default {
   components: {
     NavbarComponent
   }
-};
+}
 </script>
 
 <style>
-/* Estilos adicionais */
+body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.layout-content {
+  min-height: calc(100vh - 110px); /* espaço restante para conteúdo */
+  padding: 2rem 1rem;
+}
+
+.layout-footer {
+  padding: 1rem 0;
+  font-size: 0.85rem;
+  background-color: #ffffff;
+  border-top: 1px solid #dee2e6;
+}
 </style>

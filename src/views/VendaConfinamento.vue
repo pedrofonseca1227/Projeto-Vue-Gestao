@@ -128,7 +128,8 @@ import {
   getDocs,
   query,
   orderBy,
-  serverTimestamp
+  serverTimestamp,
+  Timestamp
 } from 'firebase/firestore'
 
 import jsPDF from 'jspdf'
@@ -172,10 +173,15 @@ export default {
 
     const registrarVenda = async () => {
       try {
+        const [ano, mes, dia] = form.value.dataVenda.split('-').map(Number)
+        const dataComHoraCorrigida = new Date(ano, mes - 1, dia, 12, 0, 0) // Corrige o fuso
+      
         await addDoc(collection(db, 'VendasGado'), {
           ...form.value,
+          dataVenda: Timestamp.fromDate(dataComHoraCorrigida),
           createdAt: serverTimestamp()
         })
+      
         mensagemSucesso.value = '✅ Venda registrada com sucesso!'
         form.value = {
           quantidade: null,
@@ -184,6 +190,7 @@ export default {
           dataVenda: '',
           comprador: ''
         }
+      
         await carregarVendas()
         setTimeout(() => (mensagemSucesso.value = ''), 4000)
       } catch (error) {
@@ -192,13 +199,13 @@ export default {
     }
 
     const formatarData = (dataStr) => {
-      const data = new Date(dataStr)
+      const data = dataStr?.toDate?.() || new Date(dataStr)
       return data.toLocaleDateString('pt-BR')
     }
 
     const vendasFiltradas = computed(() => {
       return vendas.value.filter(venda => {
-        const data = new Date(venda.dataVenda)
+        const data = venda.dataVenda?.toDate?.() || new Date(venda.dataVenda)
         const mes = data.getMonth() + 1
         const ano = data.getFullYear()
 

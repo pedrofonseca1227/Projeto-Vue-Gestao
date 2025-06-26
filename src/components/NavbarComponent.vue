@@ -1,79 +1,79 @@
 <template>
   <nav class="navbar navbar-expand-lg shadow-sm">
-    <div class="container-fluid">
+    <div class="container d-flex justify-content-between align-items-center">
 
       <!-- Logo -->
-      <router-link to="/" class="navbar-brand d-flex align-items-center">
-        <img :src="require('@/assets/Logo.png')" alt="Logo" class="logo-img me-2" />
+      <router-link to="/home" class="navbar-brand d-flex align-items-center">
+        <img :src="require('@/assets/Logo.png')" alt="Logo" class="logo-img" />
       </router-link>
 
-      <!-- Botão de colapso (mobile) -->
+      <!-- Botão mobile -->
       <button
         class="navbar-toggler"
         type="button"
         data-bs-toggle="collapse"
         data-bs-target="#navbarNav"
-        aria-controls="navbarNav"
-        aria-expanded="false"
-        aria-label="Toggle navigation"
       >
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <!-- Itens da navbar -->
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav align-items-center">
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav d-flex align-items-center gap-3">
 
-          <!-- Links principais -->
-          <li class="nav-item">
-            <router-link to="/home" class="nav-link" active-class="active">
-              <i class="fa fa-home me-1"></i> Home
-            </router-link>
+          <!-- Dropdown de Seções -->
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              🔽 Seção: {{ secaoAtiva === 'bovinos' ? 'Bovinos' : 'Estoque' }}
+            </a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#" @click.prevent="selecionarSecao('estoque')">📦 Estoque</a></li>
+              <li><a class="dropdown-item" href="#" @click.prevent="selecionarSecao('bovinos')">🐄 Bovinos</a></li>
+            </ul>
           </li>
 
-          <li class="nav-item">
-            <router-link to="/produtos" class="nav-link" active-class="active">
-              <i class="fa fa-cogs me-1"></i> Produtos
-            </router-link>
-          </li>
+          <!-- Itens da seção ESTOQUE -->
+          <template v-if="secaoAtiva === 'estoque'">
+            <li class="nav-item">
+              <router-link to="/produtos" class="nav-link" active-class="active">
+                Produtos
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/relatorios" class="nav-link" active-class="active">
+                Relatórios
+              </router-link>
+            </li>
+          </template>
 
-          <li class="nav-item">
-            <router-link to="/relatorios" class="nav-link" active-class="active">
-              <i class="fa fa-file-alt me-1"></i> Relatórios
-            </router-link>
-          </li>
-
-          <!-- Divisor -->
-          <li class="nav-divider"></li>
-
-          <!-- Seção de bovinos -->
-          <li class="nav-section-title">
-            <i class="fa fa-cow me-1"></i> Bovinos
-          </li>
-
-          <li class="nav-item">
-            <router-link to="/contagemPasto" class="nav-link" active-class="active">
-              <i class="fa fa-list me-1"></i> Contagem Pasto
-            </router-link>
-          </li>
-
-          <li class="nav-item">
-            <router-link to="/Confinamento" class="nav-link" active-class="active">
-              <i class="fa fa-plus me-1"></i> Confinamento
-            </router-link>
-          </li>
-
-          <li class="nav-item">
-            <router-link to="/vendaConfinamento" class="nav-link" active-class="active">
-              <i class="fa fa-plus me-1"></i> Vendas Confinamento
-            </router-link>
-          </li>
-
-          <li class="nav-item">
-            <router-link to="/registrarVenda" class="nav-link" active-class="active">
-              <i class="fa fa-plus me-1"></i> Registro Vendas
-            </router-link>
-          </li>
+          <!-- Itens da seção BOVINOS -->
+          <template v-else>
+            <li class="nav-item">
+              <router-link to="/contagemPasto" class="nav-link" active-class="active">
+                Contagem Pasto
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/Confinamento" class="nav-link" active-class="active">
+                Confinamento
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/vendaConfinamento" class="nav-link" active-class="active">
+                Vendas Confinamento
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/registrarVenda" class="nav-link" active-class="active">
+                Registro Vendas
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link to="/cicloGastos" class="nav-link" active-class="active">
+                Ciclo Gastos
+              </router-link>
+            </li>
+          </template>
 
         </ul>
       </div>
@@ -82,8 +82,27 @@
 </template>
 
 <script>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
 export default {
   name: 'NavbarComponent',
+  setup() {
+    const router = useRouter()
+    const secaoAtiva = ref('bovinos')
+
+    const selecionarSecao = (secao) => {
+      secaoAtiva.value = secao
+      if (secao === 'bovinos') {
+        router.push('/home')
+      }
+    }
+
+    return {
+      secaoAtiva,
+      selecionarSecao
+    }
+  }
 }
 </script>
 
@@ -91,23 +110,7 @@ export default {
 .navbar {
   background-color: #ffffff;
   padding: 0.7rem 1rem;
-  font-family: 'Segoe UI', sans-serif;
   border-bottom: 1px solid #dee2e6;
-}
-
-.container-fluid {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.navbar-brand {
-  font-weight: 600;
-  font-size: 1.3rem;
-  color: #004080;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
 }
 
 .logo-img {
@@ -116,90 +119,29 @@ export default {
 }
 
 .navbar-nav {
-  display: flex;
   align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
+  flex-direction: row;
+  gap: 1.5rem;
 }
 
 .nav-link {
-  display: flex;
-  align-items: center;
-  position: relative;
   color: #004080;
-  transition: all 0.3s ease;
   font-weight: 500;
   letter-spacing: 0.5px;
+  transition: color 0.2s;
 }
 
-.nav-link:hover {
-  color: #007BFF;
-}
-
+.nav-link:hover,
 .nav-link.active {
   color: #007BFF;
   font-weight: 600;
 }
 
-.nav-link::after {
-  content: '';
-  position: absolute;
-  width: 100%;
-  height: 2px;
-  background: #007BFF;
-  bottom: 0;
-  left: 0;
-  transform: scaleX(0);
-  transform-origin: bottom right;
-  transition: transform 0.25s ease-out;
+.dropdown-menu {
+  min-width: 160px;
 }
 
-.nav-link:hover::after {
-  transform: scaleX(1);
-  transform-origin: bottom left;
-}
-
-.nav-section-title {
-  font-weight: bold;
-  color: #6c757d;
-  margin: 0 1rem;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  display: flex;
-  align-items: center;
-}
-
-.nav-divider {
-  width: 1px;
-  height: 30px;
-  background-color: #ccc;
-  margin: 0 1rem;
-  align-self: center;
-}
-
-/* Correção: não forçar display para que colapso funcione */
-.navbar-collapse {
-  justify-content: center;
-  align-items: center;
-}
-
-@media (max-width: 991px) {
-  .navbar-collapse {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .nav-item {
-    margin: 0.5rem 0;
-  }
-
-  .logo-img {
-    height: 35px;
-  }
+.dropdown-item:hover {
+  background-color: #f1f1f1;
 }
 </style>

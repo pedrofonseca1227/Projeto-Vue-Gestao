@@ -14,7 +14,7 @@
     <!-- Cartões de Acesso Rápido -->
     <div class="row text-center mb-5">
       <div class="col-md-4 mb-3">
-        <router-link to="/contagem-pasto" class="card-link">
+        <router-link to="/contagemPasto" class="card-link">
           <div class="card atalho shadow-sm">
             <div class="card-body">
               <h5 class="card-title">📋 Contagem no Pasto</h5>
