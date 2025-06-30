@@ -1,194 +1,113 @@
 <template>
   <div class="container mt-5">
-    <h2 class="text-center mb-4">Registrar Movimentação de Estoque</h2>
+    <h2 class="text-center mb-4">➕ Adicionar Produto</h2>
 
-    <!-- Card de Formulário -->
-    <div class="card p-4 shadow-sm">
-      <form @submit.prevent="registrarestoque">
-        
-        <!-- Campo Produto -->
-        <div class="mb-3">
-          <label for="produto" class="form-label">Produto</label>
-          <input v-model="estoque.produto" type="text" class="form-control" id="produto" @blur="carregarEstoqueAtual" placeholder="Digite o nome do produto" required />
+    <form @submit.prevent="salvarProduto" class="card p-4 shadow-sm">
+      <div class="row mb-3">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Nome</label>
+          <input v-model="produto.nome" class="form-control" required />
         </div>
-
-        <!-- Campo Quantidade -->
-        <div class="mb-3">
-          <label for="quantidade" class="form-label">Quantidade</label>
-          <div class="d-flex">
-            <input v-model.number="estoque.quantidade" :class="{'is-invalid': estoque.quantidade > estoqueAtual && estoque.tipo === 'saida'}" type="number" class="form-control" id="quantidade" placeholder="Quantidade" required />
-            <span class="ms-2 align-self-center">Estoque Atual: {{ estoqueAtual }}</span>
-          </div>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Quantidade</label>
+          <input type="number" v-model.number="produto.quantidade" class="form-control" required />
         </div>
-
-        <!-- Botões Entrada e Saída -->
-        <div class="mb-3 d-flex justify-content-between">
-          <button type="button" 
-            :class="{'btn-success': estoque.tipo === 'entrada', 'btn-outline-success': estoque.tipo !== 'entrada'}" 
-            class="btn w-48" 
-            @click="estoque.tipo = 'entrada'">
-            <i class="bi bi-arrow-down-circle"></i> Entrada
-          </button>
-          <button type="button" 
-            :class="{'btn-danger': estoque.tipo === 'saida', 'btn-outline-danger': estoque.tipo !== 'saida'}" 
-            class="btn w-48" 
-            @click="estoque.tipo = 'saida'">
-            <i class="bi bi-arrow-up-circle"></i> Saída
-          </button>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Categoria</label>
+          <input v-model="produto.categoria" class="form-control" />
         </div>
+      </div>
 
-        <!-- Campo Localização -->
-        <div class="mb-3">
-          <label for="localizacao" class="form-label">Localização</label>
-          <textarea v-model="estoque.localizacao" class="form-control" id="localizacao" rows="1" placeholder="Localização do produto" required></textarea>
-        </div>
+      <div class="mb-3">
+        <label class="form-label">Descrição</label>
+        <textarea v-model="produto.descricao" class="form-control" rows="2"></textarea>
+      </div>
 
-        <!-- Campo Descrição -->
-        <div class="mb-3">
-          <label for="descricao" class="form-label">Descrição</label>
-          <textarea v-model="estoque.descricao" class="form-control" id="descricao" rows="3" placeholder="Descrição da movimentação" required></textarea>
-        </div>
+      <div class="mb-3">
+        <label class="form-label">Localização</label>
+        <input v-model="produto.localizacao" class="form-control" />
+      </div>
 
-        <!-- Campo Funcionário -->
-        <div class="mb-3">
-          <label for="funcionario" class="form-label">Funcionário</label>
-          <input v-model="estoque.funcionario" type="text" class="form-control" id="funcionario" placeholder="Nome do funcionário" required />
-        </div>
+      <div class="mb-3">
+        <label class="form-label">Imagem do Produto</label>
+        <input type="file" @change="onFileChange" accept="image/*" class="form-control" />
+      </div>
 
-        <!-- Botão de Submissão -->
-        <button type="submit" class="btn btn-primary w-100 mt-3">Registrar Movimentação</button>
-      </form>
-    </div>
+      <div v-if="produto.imagemBase64" class="mb-3 text-center">
+        <img :src="produto.imagemBase64" alt="Preview" class="img-preview" />
+      </div>
+
+      <div class="d-grid">
+        <button type="submit" class="btn btn-success">Salvar Produto</button>
+      </div>
+    </form>
   </div>
 </template>
 
 <script>
-import { db } from "@/firebase/firebase";
-import { collection, addDoc, getDoc, doc, setDoc } from "firebase/firestore";
+import { db } from '@/firebase/firebase';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
 
 export default {
   data() {
     return {
-      estoque: {
-        produto: "",
-        quantidade: null,
-        tipo: "entrada", // Entrada ou Saída
-        localizacao: "",
-        descricao: "",
-        funcionario: "",
-        data: new Date().toISOString(),
-      },
-      estoqueAtual: 0, // Estado para armazenar a quantidade atual do produto
+      produto: {
+        nome: '',
+        quantidade: 0,
+        categoria: '',
+        descricao: '',
+        localizacao: '',
+        data: null,
+        imagemBase64: ''
+      }
     };
   },
   methods: {
-    async registrarestoque() {
-      try {
-        if (!this.estoque.produto || !this.estoque.quantidade || !this.estoque.descricao || !this.estoque.funcionario || !this.estoque.localizacao) {
-          alert("Preencha todos os campos!");
-          return;
-        }
+    onFileChange(event) {
+      const file = event.target.files[0];
+      if (!file) return;
 
-        const produtoRef = doc(db, "estoque", this.estoque.produto);
-        const produtoSnap = await getDoc(produtoRef);
-
-        let estoqueAtual = 0;
-
-        if (produtoSnap.exists()) {
-          estoqueAtual = produtoSnap.data().quantidade || 0;
-          this.estoque.localizacao = produtoSnap.data().localizacao || this.estoque.localizacao;
-        } else {
-          await setDoc(produtoRef, {
-            nome: this.estoque.produto,
-            quantidade: 0,
-            localizacao: this.estoque.localizacao,
-          });
-          estoqueAtual = 0;
-        }
-
-        let novaQuantidade = estoqueAtual;
-
-        if (this.estoque.tipo === "entrada") {
-          novaQuantidade += this.estoque.quantidade;
-        } else if (this.estoque.tipo === "saida") {
-          if (estoqueAtual < this.estoque.quantidade) {
-            alert("Estoque insuficiente para essa saída!");
-            return;
-          }
-          novaQuantidade -= this.estoque.quantidade;
-        }
-
-        await setDoc(produtoRef, {
-          nome: this.estoque.produto,
-          quantidade: novaQuantidade,
-          localizacao: this.estoque.localizacao,
-        }, { merge: true });
-
-        await addDoc(collection(db, "movimentacao_estoque"), {
-          produto: this.estoque.produto,
-          quantidade: this.estoque.quantidade,
-          tipo: this.estoque.tipo,
-          localizacao: this.estoque.localizacao,
-          descricao: this.estoque.descricao,
-          funcionario: this.estoque.funcionario,
-          data: new Date().toISOString(),
-        });
-
-        alert("Movimentação registrada com sucesso!");
-        this.resetForm();
-      } catch (error) {
-        console.error("Erro ao registrar movimentação:", error);
-        alert("Erro ao registrar movimentação. Tente novamente.");
-      }
-    },
-
-    resetForm() {
-      this.estoque = {
-        produto: "",
-        quantidade: null,
-        tipo: "entrada",
-        localizacao: "",
-        descricao: "",
-        funcionario: "",
-        data: new Date().toISOString(),
+      const reader = new FileReader();
+      reader.onload = e => {
+        this.produto.imagemBase64 = e.target.result;
       };
+      reader.readAsDataURL(file);
     },
-
-    async carregarEstoqueAtual() {
+    async salvarProduto() {
       try {
-        if (this.estoque.produto) {
-          const produtoRef = doc(db, "estoque", this.estoque.produto);
-          const produtoSnap = await getDoc(produtoRef);
+        const dados = {
+          ...this.produto,
+          data: Timestamp.now()
+        };
 
-          if (produtoSnap.exists()) {
-            this.estoqueAtual = produtoSnap.data().quantidade || 0;
-          } else {
-            this.estoqueAtual = 0;
-          }
-        }
+        await addDoc(collection(db, 'estoque'), dados);
+        alert('✅ Produto salvo com sucesso!');
+        this.$router.push('/produtos');
       } catch (error) {
-        console.error("Erro ao carregar estoque atual:", error);
+        console.error('Erro ao salvar produto:', error);
+        alert('❌ Erro ao salvar. Tente novamente.');
       }
-    },
-  },
+    }
+  }
 };
 </script>
 
 <style scoped>
-/* Adicionando sombras e bordas arredondadas para os campos */
-.card {
-  border-radius: 15px;
-  background-color: #f8f9fa;
+.img-preview {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
 }
 
-/* Melhorando o foco nos campos de entrada */
-input:focus, textarea:focus {
-  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-  border-color: #007bff;
-}
-
-/* Adicionando uma borda vermelha para o campo com erro */
-.is-invalid {
-  border-color: #dc3545;
+@media (max-width: 768px) {
+  .form-label, .form-control, .btn {
+    font-size: 14px;
+  }
+  h2 {
+    font-size: 20px;
+  }
 }
 </style>

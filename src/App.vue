@@ -8,7 +8,7 @@
     </main>
 
     <footer v-if="$route.path !== '/'" class="layout-footer text-center text-muted">
-      <small>© {{ new Date().getFullYear() }} Gestão Pecuária - Desenvolvido por Pedro</small>
+      <small>© {{ new Date().getFullYear() }} Gestão Fazenda Santa Esméria - Desenvolvido por Pedro</small>
     </footer>
   </div>
 </template>

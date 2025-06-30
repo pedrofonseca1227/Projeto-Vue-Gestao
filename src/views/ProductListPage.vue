@@ -1,43 +1,54 @@
 <template>
   <div class="container mt-5">
-    <h2 class="text-center mb-4">Lista de Produtos</h2>
-    
-    <!-- Campo de Pesquisa -->
+    <h2 class="text-center mb-4">📦 Lista de Produtos</h2>
+
+    <!-- Pesquisa -->
     <div class="row mb-3">
       <div class="col-md-6 offset-md-3">
-        <input v-model="filtro.nome" type="text" class="form-control" placeholder="Pesquisar por nome do produto" />
+        <input v-model="filtro" class="form-control" placeholder="🔍 Buscar por nome" />
       </div>
     </div>
-    
-    <!-- Botão de Adicionar Produto -->
+
+    <!-- Botão adicionar -->
     <div class="text-end mb-3">
-      <button @click="adicionarProduto" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Adicionar Produto
+      <button @click="adicionarProduto" class="btn btn-success">
+        ➕ Adicionar Produto
       </button>
     </div>
 
-    <!-- Tabela de Produtos -->
+    <!-- Tabela -->
     <div class="table-responsive">
       <table class="table table-bordered table-striped">
-        <thead>
+        <thead class="table-dark">
           <tr>
+            <th>Imagem</th>
             <th>Produto</th>
             <th>Quantidade</th>
-            <th>Última Localização</th>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Localização</th>
+            <th>Data</th>
             <th>Ações</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="produtosFiltrados.length === 0">
-            <td colspan="4" class="text-center">Nenhum produto encontrado</td>
+            <td colspan="8" class="text-center text-muted">Nenhum produto encontrado</td>
           </tr>
-          <tr v-for="produto in produtosFiltrados" :key="produto.id">
-            <td>{{ produto.nome }}</td>
-            <td>{{ produto.quantidade }}</td>
-            <td>{{ produto.localizacao }}</td>
+          <tr v-for="p in produtosFiltrados" :key="p.id">
             <td>
-              <button @click="excluirProduto(produto.id)" class="btn btn-danger btn-sm">
-                <i class="bi bi-trash"></i> Excluir
+              <img v-if="p.imagemBase64" :src="p.imagemBase64" class="img-produto" />
+              <span v-else class="text-muted">Sem imagem</span>
+            </td>
+            <td>{{ p.nome }}</td>
+            <td>{{ p.quantidade }}</td>
+            <td>{{ p.categoria }}</td>
+            <td>{{ p.descricao }}</td>
+            <td>{{ p.localizacao }}</td>
+            <td>{{ formatarData(p.data) }}</td>
+            <td>
+              <button @click="excluirProduto(p.id)" class="btn btn-sm btn-danger">
+                🗑️ Excluir
               </button>
             </td>
           </tr>
@@ -48,79 +59,57 @@
 </template>
 
 <script>
-import { db } from "@/firebase/firebase"; 
-import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
+import { db } from '@/firebase/firebase';
+import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 
 export default {
   data() {
     return {
       produtos: [],
-      filtro: {
-        nome: "",
-      },
+      filtro: ''
     };
-  },
-  async created() {
-    this.carregarProdutos();
   },
   computed: {
     produtosFiltrados() {
-      return this.produtos.filter(produto => {
-        return produto.nome.toLowerCase().includes(this.filtro.nome.toLowerCase());
-      });
-    },
+      return this.produtos.filter(p =>
+        p.nome.toLowerCase().includes(this.filtro.toLowerCase())
+      );
+    }
   },
   methods: {
+    async carregarProdutos() {
+      const snap = await getDocs(collection(db, 'estoque'));
+      this.produtos = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+    formatarData(data) {
+      return data?.toDate().toLocaleDateString('pt-BR') || '-';
+    },
     adicionarProduto() {
-      this.$router.push("/adicionar-produto");
+      this.$router.push('/adicionar-produto');
     },
     async excluirProduto(id) {
-      if (confirm("Tem certeza que deseja excluir este produto?")) {
-        try {
-          await deleteDoc(doc(db, "estoque", id));
-          this.carregarProdutos(); // Recarrega a lista de produtos
-          alert("Produto excluído com sucesso!");
-        } catch (error) {
-          console.error("Erro ao excluir produto:", error);
-          alert("Erro ao excluir o produto. Tente novamente.");
-        }
+      if (confirm('Deseja excluir este produto?')) {
+        await deleteDoc(doc(db, 'estoque', id));
+        this.carregarProdutos();
       }
-    },
-    async carregarProdutos() {
-      try {
-        const querySnapshot = await getDocs(collection(db, "estoque"));
-        this.produtos = querySnapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            nome: data.nome,
-            quantidade: data.quantidade,
-            localizacao: data.localizacao,
-          };
-        });
-      } catch (error) {
-        console.error("Erro ao carregar produtos:", error);
-      }
-    },
+    }
   },
+  created() {
+    this.carregarProdutos();
+  }
 };
 </script>
 
 <style scoped>
 .table th, .table td {
   text-align: center;
+  vertical-align: middle;
 }
-.table th {
-  background-color: #f8f9fa;
-  color: #495057;
-}
-.table td {
-  font-size: 0.9rem;
-}
-.text-center {
-  text-align: center;
-}
-.text-end {
-  text-align: end;
+
+.img-produto {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
 }
 </style>

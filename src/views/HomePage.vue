@@ -13,7 +13,7 @@
 
     <!-- Cartões de Acesso Rápido -->
     <div class="row text-center mb-5">
-      <div class="col-md-4 mb-3">
+      <div class="col-md-4 col-12 mb-3">
         <router-link to="/contagemPasto" class="card-link">
           <div class="card atalho shadow-sm">
             <div class="card-body">
@@ -24,7 +24,7 @@
         </router-link>
       </div>
 
-      <div class="col-md-4 mb-3">
+      <div class="col-md-4 col-12 mb-3">
         <router-link to="/add-pasto" class="card-link">
           <div class="card atalho shadow-sm">
             <div class="card-body">
@@ -35,15 +35,15 @@
         </router-link>
       </div>
 
-      <div class="col-md-4 mb-3">
-        <button class="card-link" @click="exportToPDF">
+      <div class="col-md-4 col-12 mb-3">
+        <div class="card-link" @click="exportToPDF" style="cursor: pointer;">
           <div class="card atalho shadow-sm">
             <div class="card-body">
               <h5 class="card-title">📄 Exportar Relatório</h5>
               <p class="card-text">Gerar PDF com o resumo do rebanho.</p>
             </div>
           </div>
-        </button>
+        </div>
       </div>
     </div>
 
@@ -227,5 +227,19 @@ export default {
 .table td,
 .table th {
   vertical-align: middle;
+}
+@media (max-width: 768px) {
+  .card-title {
+    font-size: 1rem;
+  }
+  .card-text {
+    font-size: 0.85rem;
+  }
+  h1 {
+    font-size: 1.5rem;
+  }
+  .container {
+    padding: 0 1rem;
+  }
 }
 </style>
