@@ -160,7 +160,7 @@ export default {
 
     const carregarVendas = async () => {
       try {
-        const q = query(collection(db, 'VendasGado'), orderBy('createdAt', 'desc'))
+        const q = query(collection(db, 'VendasGado'), orderBy('dataVenda', 'desc'))
         const snapshot = await getDocs(q)
         vendas.value = snapshot.docs.map(doc => ({
           id: doc.id,
