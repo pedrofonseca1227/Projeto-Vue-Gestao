@@ -155,9 +155,13 @@ export default {
     }
 
     const formatarData = (timestamp) => {
-      const data = timestamp?.toDate?.() || new Date(timestamp)
-      return data.toLocaleDateString('pt-BR')
-    }
+      const data = timestamp?.toDate?.() || new Date(timestamp);
+        
+      // Ajusta o fuso manualmente (ex: GMT-3)
+      const dataLocal = new Date(data.getTime() + (data.getTimezoneOffset() * 60000));
+      return dataLocal.toLocaleDateString('pt-BR');
+    };
+
 
     onMounted(() => {
       carregarLotes()
