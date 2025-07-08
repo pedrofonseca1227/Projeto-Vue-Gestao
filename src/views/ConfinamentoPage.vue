@@ -122,20 +122,26 @@ export default {
     }
 
     const cadastrarLote = async () => {
+      const [ano, mes, dia] = form.value.dataEntrada.split('-').map(Number);
+      const dataCorrigida = new Date(ano, mes - 1, dia, 12, 0, 0);
+
       const doc = {
         ...form.value,
-        dataEntrada: Timestamp.fromDate(new Date(form.value.dataEntrada)),
+        dataEntrada: Timestamp.fromDate(dataCorrigida),
         createdAt: Timestamp.now()
-      }
-      await addDoc(collection(db, 'LotesConfinamento'), doc)
-      await carregarLotes()
+      };
+    
+      await addDoc(collection(db, 'LotesConfinamento'), doc);
+      await carregarLotes();
+    
       form.value = {
         id: '', quantidade: null, dataEntrada: '', pesoInicial: null,
         valorCompraTotal: null, raca: '', categoria: '', gpd: null, linha: ''
-      }
-      mensagem.value = '✅ Lote cadastrado com sucesso!'
-      setTimeout(() => mensagem.value = '', 4000)
-    }
+      };
+    
+      mensagem.value = '✅ Lote cadastrado com sucesso!';
+      setTimeout(() => mensagem.value = '', 4000);
+    };
 
     const calcularDiasConfinamento = (dataEntrada) => {
       const entrada = dataEntrada.toDate ? dataEntrada.toDate() : new Date(dataEntrada)
