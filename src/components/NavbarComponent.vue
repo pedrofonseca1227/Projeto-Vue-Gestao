@@ -1,7 +1,6 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
-    <div class="container-fluid px-3">
-
+    <div class="container px-3">
       <!-- Logo -->
       <router-link to="/home" class="navbar-brand d-flex align-items-center">
         <img :src="require('@/assets/Logo.png')" alt="Logo" class="logo-img me-2" />
@@ -14,8 +13,9 @@
 
       <!-- Menu -->
       <div class="collapse navbar-collapse" :class="{ show: menuAberto }">
-        <ul class="navbar-nav ms-auto d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 gap-lg-3 text-center text-lg-start">
-
+        <ul
+          class="navbar-nav w-100 flex-column flex-lg-row align-items-start align-items-lg-center gap-2 gap-lg-3"
+        >
           <!-- Dropdown Seção -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -55,7 +55,6 @@
               <router-link to="/cicloGastos" class="nav-link" @click="fecharMenu">Ciclo Gastos</router-link>
             </li>
           </template>
-
         </ul>
       </div>
     </div>
@@ -77,6 +76,7 @@ export default {
       secaoAtiva.value = secao
       menuAberto.value = false
       if (secao === 'bovinos') router.push('/home')
+      if (secao === 'estoque') router.push('/produtos')
     }
 
     const toggleMenu = () => {
@@ -133,12 +133,18 @@ export default {
 @media (max-width: 991px) {
   .navbar-nav {
     width: 100%;
+    text-align: center;
   }
 
   .nav-link {
     width: 100%;
-    text-align: left;
-    padding-left: 1rem;
+    text-align: center;
+    padding: 0.5rem 1rem;
+  }
+
+  .dropdown-menu {
+    width: 100%;
+    text-align: center;
   }
 }
 </style>
