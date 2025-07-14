@@ -51,45 +51,48 @@
       </div>
     </form>
 
+    <!-- Mensagem -->
     <div v-if="mensagem" class="alert alert-success text-center mt-3">
       {{ mensagem }}
     </div>
 
-    <!-- Listagem de lotes cadastrados -->
+    <!-- Listagem -->
     <h4 class="text-primary border-bottom pb-2 mb-3 mt-5">📦 Lotes Ativos</h4>
     <div v-if="lotes.length" class="card p-3">
-      <table class="table table-bordered table-striped table-hover table-striped">
-        <thead class="table-dark">
-          <tr>
-            <th>ID</th>
-            <th>Entrada</th>
-            <th>Dias</th>
-            <th>Qtde</th>
-            <th>P. Inicial</th>
-            <th>P. Final Est.</th>
-            <th>Valor Compra</th>
-            <th>GPD</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="lote in lotes" :key="lote.id">
-            <td>{{ lote.id }}</td>
-            <td>{{ formatarData(lote.dataEntrada) }}</td>
-            <td>{{ calcularDiasConfinamento(lote.dataEntrada) }}</td>
-            <td>{{ lote.quantidade }}</td>
-            <td>{{ lote.pesoInicial }} kg</td>
-            <td>{{ calcularPesoFinal(lote) }} kg</td>
-            <td>R$ {{ lote.valorCompraTotal?.toFixed(2) }}</td>
-            <td>{{ lote.gpd }}</td>
-            <td>
-              <span class="badge" :class="calcularDiasConfinamento(lote.dataEntrada) >= 90 ? 'bg-success' : 'bg-warning'">
-                {{ calcularDiasConfinamento(lote.dataEntrada) >= 90 ? 'Pronto p/ Venda' : 'Em Confinamento' }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>ID</th>
+              <th>Entrada</th>
+              <th>Dias</th>
+              <th>Qtde</th>
+              <th>P. Inicial</th>
+              <th>P. Final Est.</th>
+              <th>Valor Compra</th>
+              <th>GPD</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="lote in lotes" :key="lote.id">
+              <td>{{ lote.id }}</td>
+              <td>{{ formatarData(lote.dataEntrada) }}</td>
+              <td>{{ calcularDiasConfinamento(lote.dataEntrada) }}</td>
+              <td>{{ lote.quantidade }}</td>
+              <td>{{ lote.pesoInicial }} kg</td>
+              <td>{{ calcularPesoFinal(lote) }} kg</td>
+              <td>R$ {{ lote.valorCompraTotal?.toFixed(2) }}</td>
+              <td>{{ lote.gpd }}</td>
+              <td>
+                <span class="badge" :class="calcularDiasConfinamento(lote.dataEntrada) >= 90 ? 'bg-success' : 'bg-warning'">
+                  {{ calcularDiasConfinamento(lote.dataEntrada) >= 90 ? 'Pronto p/ Venda' : 'Em Confinamento' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
@@ -122,26 +125,26 @@ export default {
     }
 
     const cadastrarLote = async () => {
-      const [ano, mes, dia] = form.value.dataEntrada.split('-').map(Number);
-      const dataCorrigida = new Date(ano, mes - 1, dia, 12, 0, 0);
+      const [ano, mes, dia] = form.value.dataEntrada.split('-').map(Number)
+      const dataCorrigida = new Date(ano, mes - 1, dia, 12, 0, 0)
 
       const doc = {
         ...form.value,
         dataEntrada: Timestamp.fromDate(dataCorrigida),
         createdAt: Timestamp.now()
-      };
-    
-      await addDoc(collection(db, 'LotesConfinamento'), doc);
-      await carregarLotes();
-    
+      }
+
+      await addDoc(collection(db, 'LotesConfinamento'), doc)
+      await carregarLotes()
+
       form.value = {
         id: '', quantidade: null, dataEntrada: '', pesoInicial: null,
         valorCompraTotal: null, raca: '', categoria: '', gpd: null, linha: ''
-      };
-    
-      mensagem.value = '✅ Lote cadastrado com sucesso!';
-      setTimeout(() => mensagem.value = '', 4000);
-    };
+      }
+
+      mensagem.value = '✅ Lote cadastrado com sucesso!'
+      setTimeout(() => mensagem.value = '', 4000)
+    }
 
     const calcularDiasConfinamento = (dataEntrada) => {
       const entrada = dataEntrada.toDate ? dataEntrada.toDate() : new Date(dataEntrada)
@@ -155,31 +158,40 @@ export default {
     }
 
     const formatarData = (timestamp) => {
-      const data = timestamp?.toDate?.() || new Date(timestamp);
-        
-      // Ajusta o fuso manualmente (ex: GMT-3)
-      const dataLocal = new Date(data.getTime() + (data.getTimezoneOffset() * 60000));
-      return dataLocal.toLocaleDateString('pt-BR');
-    };
-
+      const data = timestamp?.toDate?.() || new Date(timestamp)
+      const dataLocal = new Date(data.getTime() + data.getTimezoneOffset() * 60000)
+      return dataLocal.toLocaleDateString('pt-BR')
+    }
 
     onMounted(() => {
       carregarLotes()
     })
 
-    return { form, cadastrarLote, lotes, calcularDiasConfinamento, calcularPesoFinal, formatarData, mensagem }
+    return {
+      form,
+      cadastrarLote,
+      lotes,
+      calcularDiasConfinamento,
+      calcularPesoFinal,
+      formatarData,
+      mensagem
+    }
   }
 }
 </script>
 
 <style scoped>
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table {
+  min-width: 900px;
+}
+
 .table td, .table th {
   vertical-align: middle;
   text-align: center;
-}
-
-.table-striped tbody tr:nth-of-type(odd) {
-  background-color: #f9f9f9;
 }
 
 .table th {

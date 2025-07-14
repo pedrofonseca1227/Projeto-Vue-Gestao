@@ -1,27 +1,22 @@
 <template>
-  <nav class="navbar navbar-expand-lg shadow-sm">
-    <div class="container d-flex justify-content-between align-items-center">
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+    <div class="container-fluid px-3">
 
       <!-- Logo -->
       <router-link to="/home" class="navbar-brand d-flex align-items-center">
-        <img :src="require('@/assets/Logo.png')" alt="Logo" class="logo-img" />
+        <img :src="require('@/assets/Logo.png')" alt="Logo" class="logo-img me-2" />
       </router-link>
 
-      <!-- Botão mobile -->
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#navbarNav"
-      >
+      <!-- Botão Menu Mobile -->
+      <button class="navbar-toggler" type="button" @click="toggleMenu">
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <!-- Itens da navbar -->
-      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-        <ul class="navbar-nav d-flex align-items-center gap-3">
+      <!-- Menu -->
+      <div class="collapse navbar-collapse" :class="{ show: menuAberto }">
+        <ul class="navbar-nav ms-auto d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 gap-lg-3 text-center text-lg-start">
 
-          <!-- Dropdown de Seções -->
+          <!-- Dropdown Seção -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
               🔽 Seção: {{ secaoAtiva === 'bovinos' ? 'Bovinos' : 'Estoque' }}
@@ -32,46 +27,32 @@
             </ul>
           </li>
 
-          <!-- Itens da seção ESTOQUE -->
+          <!-- Estoque -->
           <template v-if="secaoAtiva === 'estoque'">
             <li class="nav-item">
-              <router-link to="/produtos" class="nav-link" active-class="active">
-                Produtos
-              </router-link>
+              <router-link to="/produtos" class="nav-link" @click="fecharMenu">Produtos</router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/relatorios" class="nav-link" active-class="active">
-                Relatórios
-              </router-link>
+              <router-link to="/relatorios" class="nav-link" @click="fecharMenu">Relatórios</router-link>
             </li>
           </template>
 
-          <!-- Itens da seção BOVINOS -->
+          <!-- Bovinos -->
           <template v-else>
             <li class="nav-item">
-              <router-link to="/contagemPasto" class="nav-link" active-class="active">
-                Contagem Pasto
-              </router-link>
+              <router-link to="/contagemPasto" class="nav-link" @click="fecharMenu">Contagem Pasto</router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/Confinamento" class="nav-link" active-class="active">
-                Confinamento
-              </router-link>
+              <router-link to="/Confinamento" class="nav-link" @click="fecharMenu">Confinamento</router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/vendaConfinamento" class="nav-link" active-class="active">
-                Vendas Confinamento
-              </router-link>
+              <router-link to="/vendaConfinamento" class="nav-link" @click="fecharMenu">Vendas Confinamento</router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/registrarVenda" class="nav-link" active-class="active">
-                Registro Vendas
-              </router-link>
+              <router-link to="/registrarVenda" class="nav-link" @click="fecharMenu">Registro Vendas</router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/cicloGastos" class="nav-link" active-class="active">
-                Ciclo Gastos
-              </router-link>
+              <router-link to="/cicloGastos" class="nav-link" @click="fecharMenu">Ciclo Gastos</router-link>
             </li>
           </template>
 
@@ -90,17 +71,28 @@ export default {
   setup() {
     const router = useRouter()
     const secaoAtiva = ref('bovinos')
+    const menuAberto = ref(false)
 
     const selecionarSecao = (secao) => {
       secaoAtiva.value = secao
-      if (secao === 'bovinos') {
-        router.push('/home')
-      }
+      menuAberto.value = false
+      if (secao === 'bovinos') router.push('/home')
+    }
+
+    const toggleMenu = () => {
+      menuAberto.value = !menuAberto.value
+    }
+
+    const fecharMenu = () => {
+      menuAberto.value = false
     }
 
     return {
       secaoAtiva,
-      selecionarSecao
+      selecionarSecao,
+      menuAberto,
+      toggleMenu,
+      fecharMenu
     }
   }
 }
@@ -108,9 +100,9 @@ export default {
 
 <style scoped>
 .navbar {
-  background-color: #ffffff;
   padding: 0.7rem 1rem;
   border-bottom: 1px solid #dee2e6;
+  z-index: 1030;
 }
 
 .logo-img {
@@ -118,16 +110,9 @@ export default {
   width: auto;
 }
 
-.navbar-nav {
-  align-items: center;
-  flex-direction: row;
-  gap: 1.5rem;
-}
-
 .nav-link {
   color: #004080;
   font-weight: 500;
-  letter-spacing: 0.5px;
   transition: color 0.2s;
 }
 
@@ -143,5 +128,17 @@ export default {
 
 .dropdown-item:hover {
   background-color: #f1f1f1;
+}
+
+@media (max-width: 991px) {
+  .navbar-nav {
+    width: 100%;
+  }
+
+  .nav-link {
+    width: 100%;
+    text-align: left;
+    padding-left: 1rem;
+  }
 }
 </style>
