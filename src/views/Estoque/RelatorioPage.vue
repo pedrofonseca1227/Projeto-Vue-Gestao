@@ -2,6 +2,13 @@
   <div class="container mt-5 relatorio-page">
     <h2 class="text-center titulo-relatorio">📄 Relatório Fazenda Santa Esméria</h2>
 
+    <!-- Botão imprimir -->
+    <div class="text-end mb-3">
+      <button @click="imprimirPagina" class="btn btn-primary">
+        🖨️ Imprimir Relatório
+      </button>
+    </div>
+
     <!-- LOCALIZAÇÃO -->
     <div class="bloco">
       <h4 class="titulo-secao">📍 1. Localização</h4>
@@ -69,7 +76,12 @@
 
 <script>
 export default {
-  name: 'RelatorioPage'
+  name: 'RelatorioPage',
+  methods: {
+    imprimirPagina() {
+      window.print();
+    }
+  }
 }
 </script>
 
@@ -119,6 +131,42 @@ ul li {
 @media (max-width: 768px) {
   .colunas-duplas {
     columns: 1;
+  }
+}
+
+@media print {
+  /* Esconde botões, inputs e cabeçalhos desnecessários */
+  button, 
+  input,
+  .text-end {
+    display: none !important;
+  }
+
+  .table {
+    width: 100%;
+    font-size: 12px;
+    border-collapse: collapse;
+  }
+
+  .navbar,
+  header {
+    display: none !important;
+  }
+
+    footer {
+    display: none !important;
+  }
+
+  /* Garante que a tabela ocupe toda a largura */
+  .table {
+    width: 100%;
+    font-size: 12px;
+  }
+
+  /* Centralizar título */
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
   }
 }
 </style>

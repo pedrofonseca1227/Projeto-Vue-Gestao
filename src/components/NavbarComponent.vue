@@ -19,11 +19,13 @@
           <!-- Dropdown Seção -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              🔽 Seção: {{ secaoAtiva === 'bovinos' ? 'Bovinos' : 'Estoque' }}
+              🔽 Seção: {{ secaoAtiva === 'bovinos' ? 'Bovinos' : secaoAtiva === 'estoque' ? 'Estoque' : secaoAtiva === 'standre' ? 'St André' : '' }}
+ 
             </a>
             <ul class="dropdown-menu">
               <li><a class="dropdown-item" href="#" @click.prevent="selecionarSecao('estoque')">📦 Estoque</a></li>
               <li><a class="dropdown-item" href="#" @click.prevent="selecionarSecao('bovinos')">🐄 Bovinos</a></li>
+              <li><a class="dropdown-item" href="#" @click.prevent="selecionarSecao('standre')">🐴 St André</a></li>
             </ul>
           </li>
 
@@ -38,7 +40,7 @@
           </template>
 
           <!-- Bovinos -->
-          <template v-else>
+          <template v-else-if="secaoAtiva === 'bovinos'">
             <li class="nav-item">
               <router-link to="/contagemPasto" class="nav-link" @click="fecharMenu">Contagem Pasto</router-link>
             </li>
@@ -53,6 +55,12 @@
             </li>
             <li class="nav-item">
               <router-link to="/cicloGastos" class="nav-link" @click="fecharMenu">Ciclo Gastos</router-link>
+            </li>
+          </template>
+
+          <template v-else-if="secaoAtiva === 'standre'">
+            <li class="nav-item">
+              <router-link to="/StAndre" class="nav-link" @click="fecharMenu">St André</router-link>
             </li>
           </template>
         </ul>
@@ -77,6 +85,7 @@ export default {
       menuAberto.value = false
       if (secao === 'bovinos') router.push('/home')
       if (secao === 'estoque') router.push('/produtos')
+      if (secao === 'standre') router.push('/StAndre')
     }
 
     const toggleMenu = () => {

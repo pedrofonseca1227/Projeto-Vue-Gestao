@@ -94,8 +94,7 @@ export default {
       totalAnimais: 0,
       racao: 0,
       energia: 0,
-      agua: 0,
-      maoDeObra: 0,
+      funcionario: 0,
       diesel: 0,
       manutencao: 0,
       compraGado: 0,
@@ -107,8 +106,7 @@ export default {
       { nome: 'compraGado', label: 'Compra de Gado' },
       { nome: 'racao', label: 'Racão' },
       { nome: 'energia', label: 'Energia' },
-      { nome: 'agua', label: 'Água' },
-      { nome: 'maoDeObra', label: 'Mão de Obra' },
+      { nome: 'funcionario', label: 'Funcionário' },
       { nome: 'diesel', label: 'Diesel' },
       { nome: 'manutencao', label: 'Manutenção' },
       { nome: 'outros', label: 'Outros' }
@@ -136,7 +134,7 @@ export default {
 
       form.value = {
         inicio: '', fim: '', totalAnimais: 0,
-        racao: 0, energia: 0, agua: 0, maoDeObra: 0,
+        racao: 0, energia: 0, funcionario: 0,
         diesel: 0, manutencao: 0, compraGado: 0,
         outros: 0, observacoes: ''
       }

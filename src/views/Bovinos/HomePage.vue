@@ -95,9 +95,9 @@
 <script>
 import { onMounted, ref, computed } from 'vue';
 import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from '../firebase/firebase';
+import { db } from '@/firebase/firebase';
 import jsPDF from 'jspdf';
-import logoImage from '../assets/LogoPdf.jpg';
+import logoImage from '@/assets/LogoPdf.jpg';
 
 export default {
   setup() {

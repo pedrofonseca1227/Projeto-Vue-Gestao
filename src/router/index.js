@@ -2,18 +2,19 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { getAuth, onAuthStateChanged } from 'firebase/auth'; // Firebase Auth
 
 // Importações das views
-import LoginPage from '@/views/LoginPage.vue';
-import HomePage from '@/views/HomePage.vue';
-import ProductListPage from '@/views/ProductListPage.vue';
-import AddProduct from '@/components/AddProduct.vue';
-import RelatorioPage from '@/views/RelatorioPage.vue';
-import AdicionarPasto from '@/views/AdicionarPasto.vue';
-import ContagemPasto from '@/views/ContagemPasto.vue';
-import VendaConfinamento from '@/views/VendaConfinamento.vue';
-import ConfinamentoPage from '@/views/ConfinamentoPage.vue';
-import AdicionarConfinamento from '@/views/AdicionarConfinamento.vue';
-import RegistrarVenda from '@/views/RegistrarVenda.vue';
-import GastosTrimestrais from '@/views/CicloGastos.vue';
+import LoginPage from '@/views/Auth/LoginPage.vue';
+import HomePage from '@/views/Bovinos/HomePage.vue';
+import ProductListPage from '@/views/Estoque/ProductListPage.vue';
+import AddProduct from '@/views/Estoque/AddProduct.vue';
+import RelatorioPage from '@/views/Estoque/RelatorioPage.vue';
+import AdicionarPasto from '@/views/Bovinos/AdicionarPasto.vue';
+import ContagemPasto from '@/views/Bovinos/ContagemPasto.vue';
+import VendaConfinamento from '@/views/Bovinos/VendaConfinamento.vue';
+import ConfinamentoPage from '@/views/Bovinos/ConfinamentoPage.vue';
+import AdicionarConfinamento from '@/views/Bovinos/AdicionarConfinamento.vue';
+import RegistrarVenda from '@/views/Bovinos/RegistrarVenda.vue';
+import GastosTrimestrais from '@/views/Bovinos/CicloGastos.vue';
+import StAndre from '@/views/StAndre/StAndre.vue';
 
 const routes = [
   { path: '/', name: 'Login', component: LoginPage },
@@ -28,6 +29,7 @@ const routes = [
   { path: '/adicionarConfinamento', name: 'AdicionarConfinamento', component: AdicionarConfinamento, meta: { requiresAuth: true } },
   { path: '/registrarVenda', name: 'RegistrarVenda', component: RegistrarVenda, meta: { requiresAuth: true } },
   { path: '/cicloGastos', name: 'CicloGastos', component: GastosTrimestrais, meta: { requiresAuth: true } },
+  { path: '/StAndre', name: 'StAndre', component: StAndre, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({
@@ -49,7 +51,7 @@ router.beforeEach((to, from, next) => {
   // Verifica se o usuário está autenticado
   onAuthStateChanged(auth, user => {
     if (user) {
-      next(); // está logado
+      next();
     } else {
       next('/'); // redireciona para login
     }

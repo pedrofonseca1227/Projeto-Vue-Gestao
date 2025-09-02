@@ -16,6 +16,13 @@
       </button>
     </div>
 
+    <!-- Botão imprimir -->
+    <div class="text-end mb-3">
+      <button @click="imprimirPagina" class="btn btn-primary">
+        🖨️ Imprimir Estoque
+      </button>
+    </div>
+
     <!-- Tabela -->
     <div class="table-responsive">
       <table class="table table-bordered table-striped">
@@ -92,6 +99,9 @@ export default {
         await deleteDoc(doc(db, 'estoque', id));
         this.carregarProdutos();
       }
+    },
+    imprimirPagina() {
+      window.print();
     }
   },
   created() {
@@ -111,5 +121,26 @@ export default {
   height: 60px;
   object-fit: cover;
   border-radius: 6px;
+}
+
+@media print {
+  /* Esconde botões, inputs e cabeçalhos desnecessários */
+  button, 
+  input, 
+  .text-end {
+    display: none !important;
+  }
+
+  /* Garante que a tabela ocupe toda a largura */
+  .table {
+    width: 100%;
+    font-size: 12px;
+  }
+
+  /* Centralizar título */
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
 }
 </style>

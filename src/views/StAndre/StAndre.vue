@@ -17,7 +17,7 @@
         <button class="btn btn-outline-danger me-2" @click="exportToPDF">
           🧾 Exportar PDF
         </button>
-        <router-link to="/add-pasto" class="btn btn-success">
+        <router-link to="/Bovinos/add-pasto" class="btn btn-success">
           ➕ Adicionar Animal
         </router-link>
       </div>
@@ -85,9 +85,9 @@
 <script>
 import { onMounted, ref, computed } from 'vue'
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore'
-import { db } from '../firebase/firebase.js'
+import { db } from '@/firebase/firebase.js'
 import jsPDF from 'jspdf'
-import logoImage from '../assets/LogoPdf.jpg'
+import logoImage from '@/assets/LogoPdf.jpg'
 
 export default {
   setup() {

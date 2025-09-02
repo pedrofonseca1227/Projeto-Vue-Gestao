@@ -56,6 +56,37 @@
       {{ mensagem }}
     </div>
 
+    <!-- Estatísticas -->
+    <div class="row mb-4" v-if="lotes.length">
+      <div class="col-md-3">
+        <div class="card text-center shadow-sm p-3">
+          <h6 class="text-muted">🐂 Total de Lotes</h6>
+          <h3 class="fw-bold text-primary">{{ lotes.length }}</h3>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card text-center shadow-sm p-3">
+          <h6 class="text-muted">👥 Total de Animais</h6>
+          <h3 class="fw-bold text-success">{{ totalAnimais }}</h3>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card text-center shadow-sm p-3">
+          <h6 class="text-muted">💰 Valor Investido</h6>
+          <h3 class="fw-bold text-danger">R$ {{ totalInvestido.toFixed(2) }}</h3>
+        </div>
+      </div>
+
+      <div class="col-md-3">
+        <div class="card text-center shadow-sm p-3">
+          <h6 class="text-muted">⚖️ Peso Médio Final</h6>
+          <h3 class="fw-bold text-warning">{{ pesoMedioFinal.toFixed(1) }} kg</h3>
+        </div>
+      </div>
+    </div>
+
     <!-- Listagem -->
     <h4 class="text-primary border-bottom pb-2 mb-3 mt-5">📦 Lotes Ativos</h4>
     <div v-if="lotes.length" class="card p-3">
@@ -98,7 +129,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { db } from '@/firebase/firebase'
 import { collection, addDoc, getDocs, Timestamp } from 'firebase/firestore'
 
@@ -163,6 +194,21 @@ export default {
       return dataLocal.toLocaleDateString('pt-BR')
     }
 
+    // Estatísticas (totais)
+    const totalAnimais = computed(() =>
+      lotes.value.reduce((acc, lote) => acc + (lote.quantidade || 0), 0)
+    )
+
+    const totalInvestido = computed(() =>
+      lotes.value.reduce((acc, lote) => acc + (lote.valorCompraTotal || 0), 0)
+    )
+
+    const pesoMedioFinal = computed(() => {
+      if (!lotes.value.length) return 0
+      const somaPesos = lotes.value.reduce((acc, lote) => acc + parseFloat(calcularPesoFinal(lote)), 0)
+      return somaPesos / lotes.value.length
+    })
+
     onMounted(() => {
       carregarLotes()
     })
@@ -174,7 +220,10 @@ export default {
       calcularDiasConfinamento,
       calcularPesoFinal,
       formatarData,
-      mensagem
+      mensagem,
+      totalAnimais,
+      totalInvestido,
+      pesoMedioFinal
     }
   }
 }
@@ -219,5 +268,13 @@ export default {
 
 h2, h4 {
   color: #004080;
+}
+
+.card h6 {
+  font-size: 0.85rem;
+}
+
+.card h3 {
+  margin: 0;
 }
 </style>

@@ -84,7 +84,7 @@
 
 <script>
 import { ref, onMounted, computed } from 'vue';
-import { db } from '../firebase/firebase';
+import { db } from '@/firebase/firebase';
 import {
   collection,
   addDoc,

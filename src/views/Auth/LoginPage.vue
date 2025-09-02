@@ -49,7 +49,7 @@ export default {
       try {
         this.erro = '';
         await signInWithEmailAndPassword(auth, this.email, this.password);
-        this.$router.push('/home');
+        this.$router.push('/Bovinos/Home');
       } catch (error) {
         this.erro = '❌ E-mail ou senha incorretos.';
         console.error('Erro de login:', error.code);
