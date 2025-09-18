@@ -118,7 +118,7 @@ export default {
         mensagem.value = 'Registro adicionado com sucesso!'
         sucesso.value = true
 
-        // Resetar form
+        // Resetar form 
         form.value = {
           Lote: '',
           Curral: '',

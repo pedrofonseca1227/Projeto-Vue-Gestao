@@ -35,7 +35,7 @@
       </div>
 
       <div class="alert alert-info mt-3">
-        <strong>Total de Gastos:</strong> R$ {{ totalGasto.toFixed(2) }}
+        <strong>Média Total de Gastos:</strong> R$ {{ totalGasto.toFixed(2) }}
       </div>
 
       <div class="d-grid">

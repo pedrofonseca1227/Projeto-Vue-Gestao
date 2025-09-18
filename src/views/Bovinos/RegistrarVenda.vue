@@ -70,7 +70,7 @@
           </tr>
         </tbody>
       </table>
-    </div>
+    </div>    
   </div>
 </template>
 
@@ -82,7 +82,7 @@ import {
 } from 'firebase/firestore'
 
 export default {
-  setup() {
+    setup() {
     const loteSelecionadoId = ref('')
     const cicloSelecionadoId = ref('')
     const precoArroba = ref(null)
@@ -90,28 +90,55 @@ export default {
     const ciclos = ref([])
     const historico = ref([])
     const mensagem = ref('')
-
+    
+    // Função para calcular dias de confinamento
+    const calcularDiasConfinamento = (dataEntrada) => {
+      const entrada = dataEntrada.toDate ? dataEntrada.toDate() : new Date(dataEntrada)
+      const hoje = new Date()
+      entrada.setHours(0, 0, 0, 0)
+      hoje.setHours(0, 0, 0, 0)
+      return Math.floor((hoje - entrada) / (1000 * 60 * 60 * 24))
+    }
+  
+    // Carregar lotes do Firestore e calcular dias de confinamento
     const carregarLotes = async () => {
       const snap = await getDocs(collection(db, 'LotesConfinamento'))
-      lotes.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      lotes.value = snap.docs.map(doc => {
+        const data = doc.data()
+        return {
+          id: doc.id,
+          ...data,
+          diasConfinamento: calcularDiasConfinamento(data.dataEntrada)
+        }
+      })
     }
-
+  
+    // Carregar ciclos de gastos trimestrais
     const carregarCiclos = async () => {
-      const snap = await getDocs(collection(db, 'GastosTrimestrais'))
+      const snap = await getDocs(collection(db, 'CiclosGastos'))
       ciclos.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
     }
-
+  
+    // Carregar histórico de vendas
     const carregarHistorico = async () => {
       const q = query(collection(db, 'RegistroVendasLotes'), orderBy('dataVenda', 'desc'))
       const snap = await getDocs(q)
       historico.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
     }
-
-    const loteSelecionado = computed(() => lotes.value.find(l => l.id === loteSelecionadoId.value))
-    const cicloSelecionado = computed(() => ciclos.value.find(c => c.id === cicloSelecionadoId.value))
-
-    const lotesElegiveis = computed(() => lotes.value.filter(l => l.diasConfinamento >= 90))
-
+  
+    // Computeds
+    const loteSelecionado = computed(() =>
+      lotes.value.find(l => l.id === loteSelecionadoId.value)
+    )
+  
+    const cicloSelecionado = computed(() =>
+      ciclos.value.find(c => c.id === cicloSelecionadoId.value)
+    )
+  
+    const lotesElegiveis = computed(() =>
+      lotes.value.filter(l => l.diasConfinamento >= 90)
+    )
+  
     const receitaEstimada = computed(() => {
       if (!loteSelecionado.value || !precoArroba.value) return 0
       const pesoFinal = loteSelecionado.value.pesoInicial + (loteSelecionado.value.gpd * loteSelecionado.value.diasConfinamento)
@@ -119,23 +146,25 @@ export default {
       const arrobas = pesoTotal / 15
       return arrobas * precoArroba.value
     })
-
+  
     const custoEstimado = computed(() => {
       if (!cicloSelecionado.value || !loteSelecionado.value) return 0
-      const custoPorAnimal = cicloSelecionado.value.total / cicloSelecionado.value.mediaAnimais
+      const custoPorAnimal = cicloSelecionado.value.total / cicloSelecionado.value.totalAnimais
       return loteSelecionado.value.quantidade * custoPorAnimal
     })
-
+  
     const lucroEstimado = computed(() => receitaEstimada.value - custoEstimado.value)
-
+  
+    // Formatar data
     const formatarData = (d) => {
       const data = d?.toDate?.() || new Date(d)
       return data.toLocaleDateString('pt-BR')
     }
-
+  
+    // Registrar venda
     const registrarVenda = async () => {
       if (!loteSelecionado.value || !cicloSelecionado.value || !precoArroba.value) return
-
+    
       const venda = {
         lote: loteSelecionado.value.id,
         quantidade: loteSelecionado.value.quantidade,
@@ -144,24 +173,27 @@ export default {
         lucro: lucroEstimado.value,
         dataVenda: Timestamp.now()
       }
-
+    
       await addDoc(collection(db, 'RegistroVendasLotes'), venda)
       await deleteDoc(doc(db, 'LotesConfinamento', loteSelecionado.value.id))
+    
       mensagem.value = '✅ Venda registrada com sucesso!'
       loteSelecionadoId.value = ''
       cicloSelecionadoId.value = ''
       precoArroba.value = null
+    
       await carregarLotes()
       await carregarHistorico()
+    
       setTimeout(() => (mensagem.value = ''), 4000)
     }
-
+  
     onMounted(() => {
       carregarLotes()
       carregarCiclos()
       carregarHistorico()
     })
-
+  
     return {
       loteSelecionadoId,
       cicloSelecionadoId,

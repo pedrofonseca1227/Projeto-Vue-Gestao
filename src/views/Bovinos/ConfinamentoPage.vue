@@ -15,23 +15,21 @@
           <input v-model.number="form.quantidade" type="number" class="form-control" required />
         </div>
         <div class="col-md-4">
+          <label class="form-label">Custo de Compra do Lote (R$)</label>
+          <input v-model.number="form.custoCompraGado" type="number" step="0.01" class="form-control" required />
+        </div>
+        <div class="col-md-4">
           <label class="form-label">Data de Entrada</label>
           <input v-model="form.dataEntrada" type="date" class="form-control" required />
         </div>
-
         <div class="col-md-4">
           <label class="form-label">Peso Inicial (kg)</label>
           <input v-model.number="form.pesoInicial" type="number" step="0.1" class="form-control" required />
         </div>
         <div class="col-md-4">
-          <label class="form-label">Valor Total da Compra (R$)</label>
-          <input v-model.number="form.valorCompraTotal" type="number" step="0.01" class="form-control" required />
-        </div>
-        <div class="col-md-4">
           <label class="form-label">Raça</label>
           <input v-model="form.raca" class="form-control" required />
         </div>
-
         <div class="col-md-4">
           <label class="form-label">Categoria</label>
           <input v-model="form.categoria" class="form-control" required />
@@ -74,13 +72,6 @@
 
       <div class="col-md-3">
         <div class="card text-center shadow-sm p-3">
-          <h6 class="text-muted">💰 Valor Investido</h6>
-          <h3 class="fw-bold text-danger">R$ {{ totalInvestido.toFixed(2) }}</h3>
-        </div>
-      </div>
-
-      <div class="col-md-3">
-        <div class="card text-center shadow-sm p-3">
           <h6 class="text-muted">⚖️ Peso Médio Final</h6>
           <h3 class="fw-bold text-warning">{{ pesoMedioFinal.toFixed(1) }} kg</h3>
         </div>
@@ -100,7 +91,6 @@
               <th>Qtde</th>
               <th>P. Inicial</th>
               <th>P. Final Est.</th>
-              <th>Valor Compra</th>
               <th>GPD</th>
               <th>Status</th>
             </tr>
@@ -113,7 +103,6 @@
               <td>{{ lote.quantidade }}</td>
               <td>{{ lote.pesoInicial }} kg</td>
               <td>{{ calcularPesoFinal(lote) }} kg</td>
-              <td>R$ {{ lote.valorCompraTotal?.toFixed(2) }}</td>
               <td>{{ lote.gpd }}</td>
               <td>
                 <span class="badge" :class="calcularDiasConfinamento(lote.dataEntrada) >= 90 ? 'bg-success' : 'bg-warning'">
@@ -138,9 +127,9 @@ export default {
     const form = ref({
       id: '',
       quantidade: null,
+      custoCompraGado: null,
       dataEntrada: '',
       pesoInicial: null,
-      valorCompraTotal: null,
       raca: '',
       categoria: '',
       gpd: null,
@@ -169,8 +158,7 @@ export default {
       await carregarLotes()
 
       form.value = {
-        id: '', quantidade: null, dataEntrada: '', pesoInicial: null,
-        valorCompraTotal: null, raca: '', categoria: '', gpd: null, linha: ''
+        id: '', quantidade: null, custoCompraGado: null, dataEntrada: '', pesoInicial: null, raca: '', categoria: '', gpd: null, linha: ''
       }
 
       mensagem.value = '✅ Lote cadastrado com sucesso!'
@@ -199,10 +187,6 @@ export default {
       lotes.value.reduce((acc, lote) => acc + (lote.quantidade || 0), 0)
     )
 
-    const totalInvestido = computed(() =>
-      lotes.value.reduce((acc, lote) => acc + (lote.valorCompraTotal || 0), 0)
-    )
-
     const pesoMedioFinal = computed(() => {
       if (!lotes.value.length) return 0
       const somaPesos = lotes.value.reduce((acc, lote) => acc + parseFloat(calcularPesoFinal(lote)), 0)
@@ -222,7 +206,6 @@ export default {
       formatarData,
       mensagem,
       totalAnimais,
-      totalInvestido,
       pesoMedioFinal
     }
   }
