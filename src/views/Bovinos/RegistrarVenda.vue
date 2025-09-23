@@ -3,45 +3,65 @@
     <h2 class="text-center fw-bold mb-4">📦 Registrar Venda de Lote</h2>
 
     <div class="card p-4 shadow-sm mb-5">
+      <div v-for="(vendaLote, index) in lotesParaVenda" :key="index" class="row g-3 mb-3 border p-3 rounded">
+        <div class="col-md-4">
+          <label class="form-label">Lote Selecionado</label>
+          <select v-model="vendaLote.id" class="form-select" required>
+            <option disabled value="">Escolha um lote</option>
+            <option v-for="l in lotesElegiveis" :key="l.id" :value="l.id">
+              {{ l.id }} - {{ l.quantidade }} cabeças
+            </option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Quantidade a Vender</label>
+          <input v-model.number="vendaLote.quantidadeVendida" type="number" class="form-control" min="1" :max="getQuantidadeOriginal(vendaLote.id)" required />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Peso Final Total (kg)</label>
+          <input v-model.number="vendaLote.pesoFinalTotal" type="number" step="0.01" class="form-control" required />
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <label class="form-label visually-hidden">Rendimento de Carcaça (%)</label>
+          <div class="input-group">
+            <select v-model.number="vendaLote.rendimentoCarcaça" class="form-select" required>
+              <option disabled value="">Rendimento (%)</option>
+              <option :value="55">55%</option>
+              <option :value="56">56%</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <button @click="removerLote(index)" class="btn btn-danger btn-sm w-100">-</button>
+        </div>
+      </div>
+      
+      <div class="d-grid gap-2 mb-3">
+        <button @click="adicionarLote" class="btn btn-outline-primary">+ Adicionar outro Lote</button>
+      </div>
+
       <div class="mb-3">
-        <label class="form-label">Selecione um lote (>= 90 dias)</label>
-        <select v-model="loteSelecionadoId" class="form-select" required>
-          <option disabled value="">Escolha um lote</option>
-          <option v-for="l in lotesElegiveis" :key="l.id" :value="l.id">
-            {{ l.id }} - {{ l.quantidade }} cabeças - Entrada: {{ formatarData(l.dataEntrada) }}
+        <label class="form-label">Selecione o ciclo de gastos</label>
+        <select v-model="cicloSelecionadoId" class="form-select" required>
+          <option disabled value="">Escolha um ciclo</option>
+          <option v-for="ciclo in ciclos" :key="ciclo.id" :value="ciclo.id">
+            {{ formatarData(ciclo.inicio) }} a {{ formatarData(ciclo.fim) }} - R$ {{ ciclo.total.toFixed(2) }}
           </option>
         </select>
       </div>
 
-      <div v-if="loteSelecionado" class="mt-3">
-        <p><strong>Raça:</strong> {{ loteSelecionado.raca }}</p>
-        <p><strong>Categoria:</strong> {{ loteSelecionado.categoria }}</p>
-        <p><strong>Quantidade:</strong> {{ loteSelecionado.quantidade }}</p>
-        <p><strong>Data de Entrada:</strong> {{ formatarData(loteSelecionado.dataEntrada) }}</p>
-
-        <div class="mb-3">
-          <label class="form-label">Selecione o ciclo de gastos</label>
-          <select v-model="cicloSelecionadoId" class="form-select" required>
-            <option disabled value="">Escolha um ciclo</option>
-            <option v-for="ciclo in ciclos" :key="ciclo.id" :value="ciclo.id">
-              {{ formatarData(ciclo.inicio) }} a {{ formatarData(ciclo.fim) }} - R$ {{ ciclo.total.toFixed(2) }}
-            </option>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Preço acordado da arroba (R$)</label>
-          <input v-model.number="precoArroba" type="number" step="0.01" class="form-control" required />
-        </div>
-
-        <div class="alert alert-info">
-          <p><strong>Receita Estimada:</strong> R$ {{ receitaEstimada.toFixed(2) }}</p>
-          <p><strong>Custo Estimado:</strong> R$ {{ custoEstimado.toFixed(2) }}</p>
-          <p><strong>Lucro Estimado:</strong> R$ {{ lucroEstimado.toFixed(2) }}</p>
-        </div>
-
-        <button class="btn btn-success w-100" @click="registrarVenda">✅ Registrar Venda</button>
+      <div class="mb-3">
+        <label class="form-label">Preço acordado da arroba (R$)</label>
+        <input v-model.number="precoArroba" type="number" step="0.01" class="form-control" required />
       </div>
+
+      <div class="alert alert-info">
+        <p><strong>Receita Total Estimada:</strong> R$ {{ receitaEstimada.toFixed(2) }}</p>
+        <p><strong>Custo Total Estimado:</strong> R$ {{ custoEstimado.toFixed(2) }}</p>
+        <p><strong>Lucro Total Estimado:</strong> R$ {{ lucroEstimado.toFixed(2) }}</p>
+      </div>
+
+      <button class="btn btn-success w-100" @click="registrarVenda">✅ Registrar Venda</button>
     </div>
 
     <div v-if="mensagem" class="alert alert-success text-center">{{ mensagem }}</div>
@@ -52,8 +72,7 @@
         <thead class="table-dark">
           <tr>
             <th>Data</th>
-            <th>Lote</th>
-            <th>Qtde</th>
+            <th>Qtde Total</th>
             <th>Receita</th>
             <th>Custo</th>
             <th>Lucro</th>
@@ -62,7 +81,6 @@
         <tbody>
           <tr v-for="v in historico" :key="v.id">
             <td>{{ formatarData(v.dataVenda) }}</td>
-            <td>{{ v.lote }}</td>
             <td>{{ v.quantidade }}</td>
             <td>R$ {{ v.receita.toFixed(2) }}</td>
             <td>R$ {{ v.custo.toFixed(2) }}</td>
@@ -70,7 +88,7 @@
           </tr>
         </tbody>
       </table>
-    </div>    
+    </div>
   </div>
 </template>
 
@@ -78,148 +96,194 @@
 import { ref, computed, onMounted } from 'vue'
 import { db } from '@/firebase/firebase'
 import {
-  collection, getDocs, doc, deleteDoc, addDoc, Timestamp, query, orderBy
+  collection, getDocs, doc, updateDoc, addDoc, deleteDoc, Timestamp, query, orderBy
 } from 'firebase/firestore'
 
 export default {
-    setup() {
-    const loteSelecionadoId = ref('')
-    const cicloSelecionadoId = ref('')
-    const precoArroba = ref(null)
-    const lotes = ref([])
-    const ciclos = ref([])
-    const historico = ref([])
-    const mensagem = ref('')
+  setup() {
+    const lotesParaVenda = ref([{ id: '', quantidadeVendida: null, pesoFinalTotal: null, rendimentoCarcaça: null }]);
+    const cicloSelecionadoId = ref('');
+    const precoArroba = ref(null);
+    const lotes = ref([]);
+    const ciclos = ref([]);
+    const historico = ref([]);
+    const mensagem = ref('');
     
-    // Função para calcular dias de confinamento
-    const calcularDiasConfinamento = (dataEntrada) => {
-      const entrada = dataEntrada.toDate ? dataEntrada.toDate() : new Date(dataEntrada)
-      const hoje = new Date()
-      entrada.setHours(0, 0, 0, 0)
-      hoje.setHours(0, 0, 0, 0)
-      return Math.floor((hoje - entrada) / (1000 * 60 * 60 * 24))
-    }
-  
-    // Carregar lotes do Firestore e calcular dias de confinamento
+    // Funções para gerenciar o formulário de múltiplos lotes
+    const adicionarLote = () => {
+      lotesParaVenda.value.push({ id: '', quantidadeVendida: null, pesoFinalTotal: null, rendimentoCarcaça: null });
+    };
+    
+    const removerLote = (index) => {
+      if (lotesParaVenda.value.length > 1) {
+        lotesParaVenda.value.splice(index, 1);
+      }
+    };
+
+    const getQuantidadeOriginal = (loteId) => {
+      const lote = lotes.value.find(l => l.id === loteId);
+      return lote ? lote.quantidade : null;
+    };
+    
+    // Carregar lotes, ciclos e histórico
     const carregarLotes = async () => {
-      const snap = await getDocs(collection(db, 'LotesConfinamento'))
+      const snap = await getDocs(collection(db, 'LotesConfinamento'));
       lotes.value = snap.docs.map(doc => {
-        const data = doc.data()
+        const data = doc.data();
         return {
           id: doc.id,
           ...data,
           diasConfinamento: calcularDiasConfinamento(data.dataEntrada)
-        }
-      })
-    }
-  
-    // Carregar ciclos de gastos trimestrais
+        };
+      });
+    };
+    
     const carregarCiclos = async () => {
-      const snap = await getDocs(collection(db, 'CiclosGastos'))
-      ciclos.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-    }
-  
-    // Carregar histórico de vendas
+      const snap = await getDocs(collection(db, 'CiclosGastos'));
+      ciclos.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    };
+    
     const carregarHistorico = async () => {
-      const q = query(collection(db, 'RegistroVendasLotes'), orderBy('dataVenda', 'desc'))
-      const snap = await getDocs(q)
-      historico.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
-    }
-  
-    // Computeds
-    const loteSelecionado = computed(() =>
-      lotes.value.find(l => l.id === loteSelecionadoId.value)
-    )
-  
-    const cicloSelecionado = computed(() =>
-      ciclos.value.find(c => c.id === cicloSelecionadoId.value)
-    )
-  
+      const q = query(collection(db, 'RegistroVendasLotes'), orderBy('dataVenda', 'desc'));
+      const snap = await getDocs(q);
+      historico.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    };
+    
+    // Funções de Cálculo (agora mais complexas)
+    const calcularDiasConfinamento = (dataEntrada) => {
+      const entrada = dataEntrada.toDate ? dataEntrada.toDate() : new Date(dataEntrada);
+      const hoje = new Date();
+      entrada.setHours(0, 0, 0, 0);
+      hoje.setHours(0, 0, 0, 0);
+      return Math.floor((hoje - entrada) / (1000 * 60 * 60 * 24));
+    };
+
+    const calcularDetalhesLote = (loteVendido) => {
+      const loteOriginal = lotes.value.find(l => l.id === loteVendido.id);
+      const ciclo = ciclos.value.find(c => c.id === cicloSelecionadoId.value);
+      
+      if (!loteOriginal || !ciclo || !precoArroba.value || !loteVendido.pesoFinalTotal || !loteVendido.quantidadeVendida || !loteVendido.rendimentoCarcaça) return null;
+    
+      // CÁLCULO DE CUSTO
+      const custoPorAnimalIndireto = ciclo.total / ciclo.totalAnimais;
+      const custoPorCabecaDireto = loteOriginal.custoCompraGado / loteOriginal.quantidade;
+      const custoPorCabecaTotal = custoPorAnimalIndireto + custoPorCabecaDireto;
+      const custoLote = loteVendido.quantidadeVendida * custoPorCabecaTotal;
+    
+      // CÁLCULO DE RECEITA CORRETO
+      const pesoMedioPorCabecaVendida = loteVendido.pesoFinalTotal / loteVendido.quantidadeVendida;
+      const pesoCarcaçaPorCabeca = pesoMedioPorCabecaVendida * (loteVendido.rendimentoCarcaça / 100);
+      const arrobasPorCabeca = pesoCarcaçaPorCabeca / 15;
+      const receitaPorCabeca = arrobasPorCabeca * precoArroba.value;
+      const receitaLote = receitaPorCabeca * loteVendido.quantidadeVendida;
+    
+      return {
+        id: loteVendido.id,
+        quantidadeVendida: loteVendido.quantidadeVendida,
+        receita: receitaLote,
+        custo: custoLote,
+        lucro: receitaLote - custoLote
+      };
+    };
+
+    // Computeds (agora somam os resultados de todos os lotes)
     const lotesElegiveis = computed(() =>
       lotes.value.filter(l => l.diasConfinamento >= 90)
-    )
-  
-    const receitaEstimada = computed(() => {
-      if (!loteSelecionado.value || !precoArroba.value) return 0
-      const pesoFinal = loteSelecionado.value.pesoInicial + (loteSelecionado.value.gpd * loteSelecionado.value.diasConfinamento)
-      const pesoTotal = pesoFinal * loteSelecionado.value.quantidade
-      const arrobas = pesoTotal / 15
-      return arrobas * precoArroba.value
-    })
-  
-    const custoEstimado = computed(() => {
-      if (!cicloSelecionado.value || !loteSelecionado.value) return 0
-
-      // 1. Calcular o Custo Indireto (compartilhado)
-      // Esse é o custo de ração, funcionários, energia, etc., distribuído por animal.
-      const custoPorAnimalIndireto = cicloSelecionado.value.total / cicloSelecionado.value.totalAnimais
-      const custoIndireto = loteSelecionado.value.quantidade * custoPorAnimalIndireto
-
-      // Esse é o valor que você acabou de adicionar ao registrar o lote.
-      const custoDireto = loteSelecionado.value.custoCompraGado || 0
-
-      return custoIndireto + custoDireto
-    })
-  
-    const lucroEstimado = computed(() => receitaEstimada.value - custoEstimado.value)
-  
+    );
+    
+    const receitaEstimada = computed(() =>
+      lotesParaVenda.value.reduce((total, lote) => {
+        const detalhes = calcularDetalhesLote(lote);
+        return total + (detalhes ? detalhes.receita : 0);
+      }, 0)
+    );
+    
+    const custoEstimado = computed(() =>
+      lotesParaVenda.value.reduce((total, lote) => {
+        const detalhes = calcularDetalhesLote(lote);
+        return total + (detalhes ? detalhes.custo : 0);
+      }, 0)
+    );
+    
+    const lucroEstimado = computed(() => receitaEstimada.value - custoEstimado.value);
+    
     // Formatar data
     const formatarData = (d) => {
-      const data = d?.toDate?.() || new Date(d)
-      return data.toLocaleDateString('pt-BR')
-    }
-  
+      const data = d?.toDate?.() || new Date(d);
+      return data.toLocaleDateString('pt-BR');
+    };
+    
     // Registrar venda
     const registrarVenda = async () => {
-      if (!loteSelecionado.value || !cicloSelecionado.value || !precoArroba.value) return
-    
+      if (!lotesParaVenda.value.every(l => l.id && l.quantidadeVendida > 0 && l.pesoFinalTotal > 0 && l.rendimentoCarcaça > 0) || !cicloSelecionadoId.value || !precoArroba.value) {
+        alert('Por favor, preencha todos os campos corretamente.');
+        return;
+      }
+      
+      const detalhesVenda = lotesParaVenda.value.map(lote => calcularDetalhesLote(lote));
+      
       const venda = {
-        lote: loteSelecionado.value.id,
-        quantidade: loteSelecionado.value.quantidade,
+        quantidade: lotesParaVenda.value.reduce((total, lote) => total + lote.quantidadeVendida, 0),
         receita: receitaEstimada.value,
         custo: custoEstimado.value,
         lucro: lucroEstimado.value,
-        dataVenda: Timestamp.now()
+        dataVenda: Timestamp.now(),
+        detalhes: detalhesVenda
+      };
+      
+      await addDoc(collection(db, 'RegistroVendasLotes'), venda);
+      
+      // Atualizar a quantidade dos lotes vendidos ou removê-los se a quantidade for 0
+      for (const loteVendido of lotesParaVenda.value) {
+        const loteRef = doc(db, 'LotesConfinamento', loteVendido.id);
+        const loteOriginal = lotes.value.find(l => l.id === loteVendido.id);
+        const novaQuantidade = loteOriginal.quantidade - loteVendido.quantidadeVendida;
+        
+        if (novaQuantidade > 0) {
+          await updateDoc(loteRef, { quantidade: novaQuantidade });
+        } else {
+          await deleteDoc(loteRef);
+        }
       }
+      
+      mensagem.value = '✅ Venda registrada com sucesso!';
+      
+      // Resetar o formulário
+      lotesParaVenda.value = [{ id: '', quantidadeVendida: null, pesoFinalTotal: null, rendimentoCarcaça: null }];
+      cicloSelecionadoId.value = '';
+      precoArroba.value = null;
+      
+      await carregarLotes();
+      await carregarHistorico();
+      
+      setTimeout(() => (mensagem.value = ''), 4000);
+    };
     
-      await addDoc(collection(db, 'RegistroVendasLotes'), venda)
-      await deleteDoc(doc(db, 'LotesConfinamento', loteSelecionado.value.id))
-    
-      mensagem.value = '✅ Venda registrada com sucesso!'
-      loteSelecionadoId.value = ''
-      cicloSelecionadoId.value = ''
-      precoArroba.value = null
-    
-      await carregarLotes()
-      await carregarHistorico()
-    
-      setTimeout(() => (mensagem.value = ''), 4000)
-    }
-  
     onMounted(() => {
-      carregarLotes()
-      carregarCiclos()
-      carregarHistorico()
-    })
-  
+      carregarLotes();
+      carregarCiclos();
+      carregarHistorico();
+    });
+    
     return {
-      loteSelecionadoId,
+      lotesParaVenda,
       cicloSelecionadoId,
       precoArroba,
       lotesElegiveis,
-      loteSelecionado,
-      cicloSelecionado,
+      ciclos,
+      historico,
       receitaEstimada,
       custoEstimado,
       lucroEstimado,
+      adicionarLote,
+      removerLote,
+      getQuantidadeOriginal,
       registrarVenda,
       formatarData,
-      historico,
-      mensagem,
-      ciclos
-    }
+      mensagem
+    };
   }
-}
+};
 </script>
 
 <style scoped>

@@ -2,7 +2,6 @@
   <div class="container mt-5">
     <h2 class="fw-bold text-center mb-4">📆 Cadastro de Gastos por Ciclo</h2>
 
-    <!-- Formulário -->
     <form @submit.prevent="registrarCiclo" class="card p-4 shadow-sm mb-4">
       <div class="row mb-3">
         <div class="col-md-6">
@@ -43,12 +42,10 @@
       </div>
     </form>
 
-    <!-- Feedback -->
     <div v-if="mensagem" class="alert alert-success text-center">
       {{ mensagem }}
     </div>
 
-    <!-- Listagem -->
     <div class="card p-3 mt-4">
       <h5 class="fw-bold mb-3">📁 Ciclos Registrados</h5>
       <table class="table table-bordered table-striped" v-if="ciclos.length">
@@ -97,13 +94,11 @@ export default {
       funcionario: 0,
       diesel: 0,
       manutencao: 0,
-      compraGado: 0,
       outros: 0,
       observacoes: ''
     })
 
     const camposGasto = [
-      { nome: 'compraGado', label: 'Compra de Gado' },
       { nome: 'racao', label: 'Racão' },
       { nome: 'energia', label: 'Energia' },
       { nome: 'funcionario', label: 'Funcionário' },
@@ -135,8 +130,8 @@ export default {
       form.value = {
         inicio: '', fim: '', totalAnimais: 0,
         racao: 0, energia: 0, funcionario: 0,
-        diesel: 0, manutencao: 0, compraGado: 0,
-        outros: 0, observacoes: ''
+        diesel: 0, manutencao: 0, outros: 0,
+        observacoes: ''
       }
 
       setTimeout(() => (mensagem.value = ''), 4000)
@@ -237,4 +232,3 @@ select {
   border-radius: 8px;
 }
 </style>
-
