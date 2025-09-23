@@ -149,8 +149,16 @@ export default {
   
     const custoEstimado = computed(() => {
       if (!cicloSelecionado.value || !loteSelecionado.value) return 0
-      const custoPorAnimal = cicloSelecionado.value.total / cicloSelecionado.value.totalAnimais
-      return loteSelecionado.value.quantidade * custoPorAnimal
+
+      // 1. Calcular o Custo Indireto (compartilhado)
+      // Esse é o custo de ração, funcionários, energia, etc., distribuído por animal.
+      const custoPorAnimalIndireto = cicloSelecionado.value.total / cicloSelecionado.value.totalAnimais
+      const custoIndireto = loteSelecionado.value.quantidade * custoPorAnimalIndireto
+
+      // Esse é o valor que você acabou de adicionar ao registrar o lote.
+      const custoDireto = loteSelecionado.value.custoCompraGado || 0
+
+      return custoIndireto + custoDireto
     })
   
     const lucroEstimado = computed(() => receitaEstimada.value - custoEstimado.value)
