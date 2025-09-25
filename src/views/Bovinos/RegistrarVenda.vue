@@ -252,10 +252,14 @@ export default {
       lotesParaVenda.value = [{ id: '', quantidadeVendida: null, pesoFinalTotal: null, rendimentoCarcaça: null }];
       cicloSelecionadoId.value = '';
       precoArroba.value = null;
+
+      // Adiciona um pequeno atraso para garantir que a atualização do banco de dados seja concluída.
+      setTimeout(async () => {
+          await carregarLotes();
+          await carregarHistorico();
+      }, 50); 
       
-      await carregarLotes();
-      await carregarHistorico();
-      
+      // Limpa a mensagem de sucesso após 4 segundos.
       setTimeout(() => (mensagem.value = ''), 4000);
     };
     

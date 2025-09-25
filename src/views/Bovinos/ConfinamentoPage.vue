@@ -1,8 +1,7 @@
 <template>
   <div class="container mt-5">
-    <h2 class="mb-4 fw-bold text-center text-primary">Cadastro de Lotes Confinados</h2>
+    <h2 class="mb-4 fw-bold text-center text-primary">Cadastro de Lotes Confinados -- 05/2025</h2>
 
-    <!-- Formulário de novo lote -->
     <h4 class="text-primary border-bottom pb-2 mb-3">📋 Novo Lote</h4>
     <form @submit.prevent="cadastrarLote" class="card p-4 shadow-sm mb-4">
       <div class="row g-3">
@@ -10,6 +9,11 @@
           <label class="form-label">ID do Lote</label>
           <input v-model="form.id" class="form-control" required />
         </div>
+        <div class="col-md-4">
+          <label class="form-label">Linha (opcional)</label>
+          <input v-model="form.linha" class="form-control" />
+        </div>
+      
         <div class="col-md-4">
           <label class="form-label">Quantidade de Animais</label>
           <input v-model.number="form.quantidade" type="number" class="form-control" required />
@@ -38,23 +42,16 @@
           <label class="form-label">GPD (kg/dia)</label>
           <input v-model.number="form.gpd" type="number" step="0.01" class="form-control" required />
         </div>
-        <div class="col-md-4">
-          <label class="form-label">Linha (opcional)</label>
-          <input v-model="form.linha" class="form-control" />
-        </div>
-      </div>
-
+      </div> 
       <div class="d-grid mt-4">
         <button class="btn btn-success">Cadastrar Lote</button>
       </div>
     </form>
 
-    <!-- Mensagem -->
     <div v-if="mensagem" class="alert alert-success text-center mt-3">
       {{ mensagem }}
     </div>
 
-    <!-- Estatísticas -->
     <div class="row mb-4" v-if="lotes.length">
       <div class="col-md-3">
         <div class="card text-center shadow-sm p-3">
@@ -78,7 +75,6 @@
       </div>
     </div>
 
-    <!-- Listagem -->
     <h4 class="text-primary border-bottom pb-2 mb-3 mt-5">📦 Lotes Ativos</h4>
     <div v-if="lotes.length" class="card p-3">
       <div class="table-responsive">
@@ -86,6 +82,7 @@
           <thead class="table-dark">
             <tr>
               <th>ID</th>
+              <th>Linha</th>
               <th>Entrada</th>
               <th>Dias</th>
               <th>Qtde</th>
@@ -98,6 +95,7 @@
           <tbody>
             <tr v-for="lote in lotes" :key="lote.id">
               <td>{{ lote.id }}</td>
+              <td>{{ lote.linha }}</td>
               <td>{{ formatarData(lote.dataEntrada) }}</td>
               <td>{{ calcularDiasConfinamento(lote.dataEntrada) }}</td>
               <td>{{ lote.quantidade }}</td>
@@ -120,12 +118,13 @@
 <script>
 import { ref, onMounted, computed } from 'vue'
 import { db } from '@/firebase/firebase'
-import { collection, addDoc, getDocs, Timestamp } from 'firebase/firestore'
+import { collection, addDoc, getDocs, Timestamp, query, orderBy } from 'firebase/firestore'
 
 export default {
   setup() {
     const form = ref({
       id: '',
+      linha: '',
       quantidade: null,
       custoCompraGado: null,
       dataEntrada: '',
@@ -133,14 +132,14 @@ export default {
       raca: '',
       categoria: '',
       gpd: null,
-      linha: ''
     })
 
     const lotes = ref([])
     const mensagem = ref('')
 
     const carregarLotes = async () => {
-      const snapshot = await getDocs(collection(db, 'LotesConfinamento'))
+      const q = query(collection(db, 'LotesConfinamento'), orderBy('linha'))
+      const snapshot = await getDocs(q)
       lotes.value = snapshot.docs.map(doc => doc.data())
     }
 
@@ -158,7 +157,7 @@ export default {
       await carregarLotes()
 
       form.value = {
-        id: '', quantidade: null, custoCompraGado: null, dataEntrada: '', pesoInicial: null, raca: '', categoria: '', gpd: null, linha: ''
+        id: '', linha: '', quantidade: null, custoCompraGado: null, dataEntrada: '', pesoInicial: null, raca: '', categoria: '', gpd: null
       }
 
       mensagem.value = '✅ Lote cadastrado com sucesso!'
