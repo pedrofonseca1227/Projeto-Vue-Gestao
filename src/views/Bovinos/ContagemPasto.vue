@@ -119,8 +119,8 @@ export default {
         const nome = b.nome?.toLowerCase() || ''
         const sexo = b.sexo?.trim().toLowerCase()
 
-        if (nome.includes('vaca') && !nome.includes('s/n')) vacas++
-        else if (nome.includes('vaca') && nome.includes('s/n')) vacasSN++
+        if (nome.includes('vaca') && !nome.includes('s/b')) vacas++
+        else if (nome.includes('vaca') && nome.includes('s/b')) vacasSN++
         else if (nome.includes('touro')) touros++
         else if (nome.includes('bezerro') && sexo === 'fêmea') bezerrosFemea++
 
@@ -132,7 +132,7 @@ export default {
 
       return {
         Vacas: vacas,
-        'Vacas S/N': vacasSN,
+        'Vacas S/B': vacasSN,
         Touros: touros,
         'Bezerros Macho': bezerrosMacho,
         'Bezerros Fêmea': bezerrosFemea,

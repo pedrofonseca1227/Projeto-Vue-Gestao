@@ -53,7 +53,7 @@
         <h4 class="mb-4">📊 Resumo Geral</h4>
         <p>
           Vacas: <strong>{{ resumo.vacas }}</strong> |
-          Vacas S/N: <strong>{{ resumo.vacasSN }}</strong> |
+          Vacas S/B: <strong>{{ resumo.vacasSN }}</strong> |
           Touros: <strong>{{ resumo.touros }}</strong> |
           Bezerros Machos: <strong>{{ resumo.bezerrosMacho }}</strong> |
           Bezerros Fêmeas: <strong>{{ resumo.bezerrosFemea }}</strong> |
@@ -74,7 +74,7 @@
                 <th>Nome</th>
                 <th>Sexo</th>
                 <th>Raça</th>
-                <th>Ano Nasc.</th>
+                <th>Origem</th>
               </tr>
             </thead>
             <tbody>
@@ -82,7 +82,7 @@
                 <td>{{ animal.nome || '-' }}</td>
                 <td>{{ animal.sexo || '-' }}</td>
                 <td>{{ animal.raca || '-' }}</td>
-                <td>{{ animal.anoNascimento || '-' }}</td>
+                <td>{{ animal.origem || '-' }}</td>
               </tr>
             </tbody>
           </table>
@@ -122,8 +122,8 @@ export default {
         const nome = b.nome?.toLowerCase() || '';
         const sexo = b.sexo?.trim().toLowerCase();
 
-        if (nome.includes('vaca') && !nome.includes('s/n')) vacas++;
-        else if (nome.includes('vaca') && nome.includes('s/n')) vacasSN++;
+        if (nome.includes('vaca') && !nome.includes('s/b')) vacas++;
+        else if (nome.includes('vaca') && nome.includes('s/b')) vacasSN++;
         else if (nome.includes('touro')) touros++;
         else if (nome.includes('bezerro') && sexo === 'fêmea') bezerrosFemea++;
 
@@ -175,7 +175,7 @@ export default {
       doc.setFontSize(12);
       doc.setTextColor(0, 0, 0);
       doc.text(`• Vacas: ${r.vacas}`, marginLeft, y); y += 10;
-      doc.text(`• Vacas S/N: ${r.vacasSN}`, marginLeft, y); y += 10;
+      doc.text(`• Vacas S/B: ${r.vacasSN}`, marginLeft, y); y += 10;
       doc.text(`• Touros: ${r.touros}`, marginLeft, y); y += 10;
       doc.text(`• Bezerros Macho: ${r.bezerrosMacho}`, marginLeft, y); y += 10;
       doc.text(`• Bezerros Fêmea: ${r.bezerrosFemea}`, marginLeft, y); y += 10;

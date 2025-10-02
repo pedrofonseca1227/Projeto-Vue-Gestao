@@ -5,7 +5,7 @@
             <div
                 v-for="(vendaLote, index) in lotesParaVenda"
                 :key="index"
-                class="row g-3 mb-3 border p-3 rounded" 
+                class="row g-3 mb-3 border p-3 rounded"
             >
                 <div class="col-md-4">
                     <label class="form-label">Lote Selecionado</label>
@@ -120,7 +120,7 @@
         </div>
 
         <div class="mt-5">
-            <h5 class="fw-bold mb-3 text-center">📄 Histórico de Vendas - Valores próximos/estimados</h5>
+            <h5 class="fw-bold mb-3 text-center">📄 Histórico de Vendas</h5>
             <table class="table table-bordered" v-if="historico.length">
                 <thead class="table-dark">
                     <tr>
@@ -132,7 +132,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="v in historico" :key="v.id">
+                    <tr 
+                        v-for="v in historico" 
+                        :key="v.id" 
+                        @click="abrirDetalhes(v)" 
+                        class="cursor-pointer"
+                    >
                         <td>{{ formatarData(v.dataVenda) }}</td>
                         <td>{{ v.quantidade }}</td>
                         <td>R$ {{ v.receita.toFixed(2) }}</td>
@@ -142,6 +147,66 @@
                 </tbody>
             </table>
         </div>
+
+        <div 
+            class="modal fade" 
+            id="detalheVendaModal" 
+            tabindex="-1" 
+            aria-labelledby="detalheVendaLabel" 
+            aria-hidden="true"
+            :class="{ 'd-block show': vendaSelecionada }" 
+            v-if="vendaSelecionada"
+        >
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detalheVendaLabel">
+                            Detalhes da Venda - {{ formatarData(vendaSelecionada.dataVenda) }}
+                        </h5>
+                        <button 
+                            type="button" 
+                            class="btn-close" 
+                            @click="fecharDetalhes" 
+                            aria-label="Close"
+                        ></button>
+                    </div>
+                    
+                    <div class="modal-body">
+                        <h6>Resumo Financeiro da Transação</h6>
+                        <p><strong>Receita Total:</strong> R$ {{ vendaSelecionada.receita.toFixed(2) }}</p>
+                        <p><strong>Custo Total:</strong> R$ {{ vendaSelecionada.custo.toFixed(2) }}</p>
+                        <p><strong>Lucro Total:</strong> R$ {{ vendaSelecionada.lucro.toFixed(2) }}</p>
+
+                        <h6 class="mt-4">Lotes Vendidos Individualmente</h6>
+                        <table class="table table-sm table-striped">
+                            <thead class="table-info">
+                                <tr>
+                                    <th>ID Lote</th>
+                                    <th>Qtde Vendida</th>
+                                    <th>Receita (R$)</th>
+                                    <th>Custo (R$)</th>
+                                    <th>Lucro (R$)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="(detalhe, i) in vendaSelecionada.detalhes" :key="i">
+                                    <td>{{ detalhe.id || 'N/A' }}</td>
+                                    <td>{{ detalhe.quantidadeVendida }}</td>
+                                    <td>{{ detalhe.receita.toFixed(2) }}</td>
+                                    <td>{{ detalhe.custo.toFixed(2) }}</td>
+                                    <td>{{ detalhe.lucro.toFixed(2) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @click="fecharDetalhes">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div v-if="vendaSelecionada" class="modal-backdrop fade show"></div>
     </div>
 </template>
 
@@ -164,7 +229,7 @@ import {
 
 export default {
     setup() {
-        // CORREÇÃO: Inicializando com 'docId' (ID Real do Firestore)
+        // Estado principal
         const lotesParaVenda = ref([
             {
                 docId: "",
@@ -179,10 +244,12 @@ export default {
         const ciclos = ref([]);
         const historico = ref([]);
         const mensagem = ref(""); 
+
+        // NOVO: Estado para o modal de detalhes
+        const vendaSelecionada = ref(null);
         
-        // Funções para gerenciar o formulário de múltiplos lotes
+        // Funções de Gerenciamento do Formulário
         const adicionarLote = () => {
-            // Usa docId no novo objeto
             lotesParaVenda.value.push({
                 docId: "",
                 quantidadeVendida: null,
@@ -196,19 +263,17 @@ export default {
             }
         }; 
 
-        // Usa docId para encontrar o lote
         const getQuantidadeOriginal = (loteDocId) => {
             const lote = lotes.value.find((l) => l.docId === loteDocId);
             return lote ? lote.quantidade : null;
         }; 
 
-        // Carregar lotes, ciclos e histórico
+        // Funções de Carregamento de Dados
         const carregarLotes = async () => {
             const snap = await getDocs(collection(db, "LotesConfinamento"));
             lotes.value = snap.docs.map((doc) => {
                 const data = doc.data();
                 return {
-                    // Mapeia o ID REAL para 'docId' e evita o conflito com o campo interno 'id'
                     docId: doc.id,
                     ...data,
                     diasConfinamento: calcularDiasConfinamento(data.dataEntrada),
@@ -240,7 +305,6 @@ export default {
         };
 
         const calcularDetalhesLote = (loteVendido) => {
-            // Usa docId para encontrar o lote original
             const loteOriginal = lotes.value.find(
                 (l) => l.docId === loteVendido.docId
             );
@@ -262,7 +326,7 @@ export default {
             const custoPorCabecaTotal = custoPorAnimalIndireto + custoPorCabecaDireto;
             const custoLote = loteVendido.quantidadeVendida * custoPorCabecaTotal; 
 
-            // CÁLCULO DE RECEITA CORRETO
+            // CÁLCULO DE RECEITA
             const pesoMedioPorCabecaVendida =
                 loteVendido.pesoFinalTotal / loteVendido.quantidadeVendida;
             const pesoCarcaçaPorCabeca =
@@ -272,8 +336,7 @@ export default {
             const receitaLote = receitaPorCabeca * loteVendido.quantidadeVendida;
 
             return {
-                // Usa o ID amigável 'id' para a exibição no histórico
-                id: loteVendido.id,
+                id: loteOriginal.id, // Usa o ID amigável do lote
                 quantidadeVendida: loteVendido.quantidadeVendida,
                 receita: receitaLote,
                 custo: custoLote,
@@ -281,7 +344,7 @@ export default {
             };
         }; 
 
-        // Computeds (agora somam os resultados de todos os lotes)
+        // Computeds
         const lotesElegiveis = computed(() =>
             lotes.value.filter((l) => l.diasConfinamento >= 90)
         );
@@ -301,15 +364,25 @@ export default {
             () => receitaEstimada.value - custoEstimado.value
         ); 
 
-        // Formatar data
+        // Funções de Utilidade
         const formatarData = (d) => {
             const data = d?.toDate?.() || new Date(d);
             return data.toLocaleDateString("pt-BR");
         }; 
 
+        // NOVO: Funções do Modal
+        const abrirDetalhes = (venda) => {
+            vendaSelecionada.value = venda;
+        };
+
+        const fecharDetalhes = () => {
+            vendaSelecionada.value = null;
+        };
+        // Fim das novas funções
+
         // Registrar venda
         const registrarVenda = async () => {
-            // Validação do formulário (usando docId)
+            // ... (A lógica de validação e registro permanece a mesma)
             if (
                 !lotesParaVenda.value.every(
                     (l) =>
@@ -326,10 +399,11 @@ export default {
             }
             const detalhesVenda = lotesParaVenda.value.map((lote) =>
                 calcularDetalhesLote(lote)
-            );
+            ).filter(detalhe => detalhe !== null); // Remove qualquer cálculo nulo
+            
             const venda = {
                 quantidade: lotesParaVenda.value.reduce(
-                    (total, lote) => total + lote.quantidadeVendida,
+                    (total, lote) => total + (lote.quantidadeVendida || 0),
                     0
                 ),
                 receita: receitaEstimada.value,
@@ -343,27 +417,18 @@ export default {
             // Atualização e Deleção do Lote com incremento
             for (const loteVendido of lotesParaVenda.value) {
                 try {
-                    // Usa loteVendido.docId que é o ID REAL do Firestore
                     const loteRef = doc(db, "LotesConfinamento", loteVendido.docId); 
-
-                    // Subtrai a quantidade usando o 'increment' do Firestore
                     await updateDoc(loteRef, {
                         quantidade: increment(-loteVendido.quantidadeVendida),
                     }); 
-
-                    // Verifica a nova quantidade para decidir se deve deletar
                     const loteSnap = await getDoc(loteRef);
                     if (loteSnap.exists() && loteSnap.data().quantidade <= 0) {
                         await deleteDoc(loteRef);
                     }
                 } catch (error) {
-                    console.error(
-                        "Erro ao atualizar lote confinado após a venda:",
-                        error
-                    );
-                    mensagem.value =
-                        "❌ Venda registrada, mas houve um erro na atualização do lote. Verifique o console.";
-                    return; // Para a execução se falhar a atualização do lote
+                    console.error("Erro ao atualizar lote confinado após a venda:", error);
+                    mensagem.value = "❌ Venda registrada, mas houve um erro na atualização do lote. Verifique o console.";
+                    return; 
                 }
             }
             mensagem.value = "✅ Venda registrada com sucesso!"; 
@@ -380,13 +445,12 @@ export default {
             cicloSelecionadoId.value = "";
             precoArroba.value = null; 
 
-            // Recarrega os dados do histórico e lotes (garante que esta tela se atualize)
+            // Recarrega os dados
             setTimeout(async () => {
                 await carregarLotes();
                 await carregarHistorico();
             }, 50); 
             
-            // Limpa a mensagem de sucesso após 4 segundos.
             setTimeout(() => (mensagem.value = ""), 4000);
         };
         
@@ -412,6 +476,11 @@ export default {
             registrarVenda,
             formatarData,
             mensagem,
+            
+            // Expondo as novas refs/funções
+            vendaSelecionada,
+            abrirDetalhes,
+            fecharDetalhes,
         };
     },
 };
@@ -475,5 +544,19 @@ h5 {
 
 .table-bordered {
     border-radius: 8px;
+}
+
+/* NOVO CSS PARA O MODAL */
+.cursor-pointer {
+    cursor: pointer;
+}
+.modal.show {
+    /* Garante que o modal simples do Bootstrap apareça corretamente */
+    display: block;
+    padding-right: 17px; /* Para acomodar a barra de rolagem */
+    overflow-y: auto;
+}
+.modal-backdrop.show {
+    opacity: 0.5;
 }
 </style>

@@ -64,6 +64,13 @@
             </li>
           </template>
         </ul>
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <button class="btn btn-danger btn-sm" @click="handleLogout">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </button>
+            </li>
+        </ul>
       </div>
     </div>
   </nav>
@@ -72,6 +79,8 @@
 <script>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { signOut } from 'firebase/auth'
+import { auth } from '@/firebase/firebase'
 
 export default {
   name: 'NavbarComponent',
@@ -96,12 +105,24 @@ export default {
       menuAberto.value = false
     }
 
+    const handleLogout = async () => {
+        try {
+            await signOut(auth)
+            // Redireciona para a tela de login
+            router.push('/')
+        } catch (error) {
+            console.error('Erro ao fazer logout:', error.code)
+            alert('Ocorreu um erro ao sair. Tente novamente.')
+        }
+    }
+
     return {
       secaoAtiva,
       selecionarSecao,
       menuAberto,
       toggleMenu,
-      fecharMenu
+      fecharMenu,
+      handleLogout
     }
   }
 }
@@ -139,6 +160,11 @@ export default {
   background-color: #f1f1f1;
 }
 
+.btn-danger {
+    font-weight: 500;
+}
+
+
 @media (max-width: 991px) {
   .navbar-nav {
     width: 100%;
@@ -154,6 +180,9 @@ export default {
   .dropdown-menu {
     width: 100%;
     text-align: center;
+  }
+  .navbar-nav:last-child {
+    margin-top: 1rem;
   }
 }
 </style>
