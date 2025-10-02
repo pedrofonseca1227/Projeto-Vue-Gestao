@@ -120,7 +120,7 @@
         </div>
 
         <div class="mt-5">
-            <h5 class="fw-bold mb-3 text-center">📄 Histórico de Vendas</h5>
+            <h5 class="fw-bold mb-3 text-center">📄 Histórico de Vendas - Valores próximos/estimados</h5>
             <table class="table table-bordered" v-if="historico.length">
                 <thead class="table-dark">
                     <tr>
