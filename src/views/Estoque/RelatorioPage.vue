@@ -38,7 +38,7 @@
         <li><strong>REFLORESTAMENTO:</strong> 57,80 Hás – 138.000 plantas</li>
         <li><strong>PASTAGENS:</strong> 680 Hás (Tipo Brachiaria)</li>
         <li><strong>MILHO:</strong> 500 Hás</li>
-        <li><strong>RESERVAS NATURAIS:</strong> 971,47 Hás</li>
+        <li><strong>RESERVAS NATURAIS:</strong> 1200,47 Hás</li>
       </ul>
     </div>
 

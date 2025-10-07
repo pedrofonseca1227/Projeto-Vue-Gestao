@@ -1,12 +1,15 @@
 <template>
     <div class="container mt-5">
         <h2 class="text-center fw-bold mb-4">📦 Registrar Venda de Lote</h2>
+
+        <!-- FORMULÁRIO DE VENDA -->
         <div class="card p-4 shadow-sm mb-5">
             <div
                 v-for="(vendaLote, index) in lotesParaVenda"
                 :key="index"
                 class="row g-3 mb-3 border p-3 rounded"
             >
+                <!-- Lote Selecionado -->
                 <div class="col-md-4">
                     <label class="form-label">Lote Selecionado</label>
                     <select v-model="vendaLote.docId" class="form-select" required>
@@ -17,6 +20,7 @@
                     </select>
                 </div>
 
+                <!-- Quantidade -->
                 <div class="col-md-3">
                     <label class="form-label">Quantidade a Vender</label>
                     <input
@@ -29,6 +33,7 @@
                     />
                 </div>
 
+                <!-- Peso -->
                 <div class="col-md-3">
                     <label class="form-label">Peso Final Total (kg)</label>
                     <input
@@ -40,30 +45,16 @@
                     />
                 </div>
 
+                <!-- Rendimento -->
                 <div class="col-md-2 d-flex align-items-end">
-                    <label class="form-label visually-hidden"
-                        >Rendimento de Carcaça (%)</label
-                    >
-                    <div class="input-group">
-                        <select
-                            v-model.number="vendaLote.rendimentoCarcaça"
-                            class="form-select"
-                            required
-                        >
-                            <option disabled value="">Rendimento (%)</option>
-                            <option :value="55">55%</option>
-                            <option :value="56">56%</option>
-                        </select>
-                    </div>
+                    <select v-model.number="vendaLote.rendimentoCarcaça" class="form-select" required>
+                        <option disabled value="">Rendimento (%)</option>
+                        <option v-for="p in [55,56,57,58,59,60]" :key="p" :value="p">{{ p }}%</option>
+                    </select>
                 </div>
 
                 <div class="col-md-1 d-flex align-items-end">
-                    <button
-                        @click="removerLote(index)"
-                        class="btn btn-danger btn-sm w-100"
-                    >
-                        -
-                    </button>
+                    <button @click="removerLote(index)" class="btn btn-danger btn-sm w-100">-</button>
                 </div>
             </div>
 
@@ -73,52 +64,45 @@
                 </button>
             </div>
 
+            <!-- Seleção de Ciclo -->
             <div class="mb-3">
                 <label class="form-label">Selecione o ciclo de gastos</label>
                 <select v-model="cicloSelecionadoId" class="form-select" required>
                     <option disabled value="">Escolha um ciclo</option>
                     <option v-for="ciclo in ciclos" :key="ciclo.id" :value="ciclo.id">
-                        {{ formatarData(ciclo.inicio) }} a
-                        {{ formatarData(ciclo.fim) }} - R$ {{ ciclo.total.toFixed(2) }}
+                        {{ formatarData(ciclo.inicio) }} a {{ formatarData(ciclo.fim) }} - 
+                        R$ {{ formatarValor(ciclo.total) }}
                     </option>
                 </select>
             </div>
 
+            <!-- Campo de Preço Arroba -->
             <div class="mb-3">
-                <label class="form-label">Preço acordado da arroba (R$)</label>
+                <label class="form-label">Preço da Arroba (R$)</label>
                 <input
                     v-model.number="precoArroba"
                     type="number"
                     step="0.01"
                     class="form-control"
+                    placeholder="Ex: 290.00"
                     required
                 />
             </div>
 
+            <!-- Resumo -->
             <div class="alert alert-info">
-                <p>
-                    <strong>Receita Total Estimada:</strong> R$
-                    {{ receitaEstimada.toFixed(2) }}
-                </p>
-                <p>
-                    <strong>Custo Total Estimado:</strong> R$
-                    {{ custoEstimado.toFixed(2) }}
-                </p>
-                <p>
-                    <strong>Lucro Total Estimado:</strong> R$
-                    {{ lucroEstimado.toFixed(2) }}
-                </p>
+                <p><strong>Receita Total Estimada:</strong> R$ {{ formatarValor(receitaEstimada) }}</p>
+                <p><strong>Custo Total Estimado:</strong> R$ {{ formatarValor(custoEstimado) }}</p>
+                <p><strong>Lucro Total Estimado:</strong> R$ {{ formatarValor(lucroEstimado) }}</p>
             </div>
 
-            <button class="btn btn-success w-100" @click="registrarVenda">
-                ✅ Registrar Venda
-            </button>
+            <button class="btn btn-success w-100" @click="registrarVenda">✅ Registrar Venda</button>
         </div>
 
-        <div v-if="mensagem" class="alert alert-success text-center">
-            {{ mensagem }}
-        </div>
+        <!-- MENSAGEM DE SUCESSO -->
+        <div v-if="mensagem" class="alert alert-success text-center">{{ mensagem }}</div>
 
+        <!-- HISTÓRICO DE VENDAS -->
         <div class="mt-5">
             <h5 class="fw-bold mb-3 text-center">📄 Histórico de Vendas</h5>
             <table class="table table-bordered" v-if="historico.length">
@@ -140,14 +124,15 @@
                     >
                         <td>{{ formatarData(v.dataVenda) }}</td>
                         <td>{{ v.quantidade }}</td>
-                        <td>R$ {{ v.receita.toFixed(2) }}</td>
-                        <td>R$ {{ v.custo.toFixed(2) }}</td>
-                        <td>R$ {{ v.lucro.toFixed(2) }}</td>
+                        <td>R$ {{ formatarValor(v.receita) }}</td>
+                        <td>R$ {{ formatarValor(v.custo) }}</td>
+                        <td>R$ {{ formatarValor(v.lucro) }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
+        <!-- MODAL DETALHES -->
         <div 
             class="modal fade" 
             id="detalheVendaModal" 
@@ -173,9 +158,11 @@
                     
                     <div class="modal-body">
                         <h6>Resumo Financeiro da Transação</h6>
-                        <p><strong>Receita Total:</strong> R$ {{ vendaSelecionada.receita.toFixed(2) }}</p>
-                        <p><strong>Custo Total:</strong> R$ {{ vendaSelecionada.custo.toFixed(2) }}</p>
-                        <p><strong>Lucro Total:</strong> R$ {{ vendaSelecionada.lucro.toFixed(2) }}</p>
+                        <p><strong>ID Ciclo de Gasto:</strong> {{ vendaSelecionada.cicloId }}</p>
+                        <hr>
+                        <p><strong>Receita Total:</strong> R$ {{ formatarValor(vendaSelecionada?.receita) }}</p>
+                        <p><strong>Custo Total:</strong> R$ {{ formatarValor(vendaSelecionada?.custo) }}</p>
+                        <p><strong>Lucro Total:</strong> R$ {{ formatarValor(vendaSelecionada?.lucro) }}</p>
 
                         <h6 class="mt-4">Lotes Vendidos Individualmente</h6>
                         <table class="table table-sm table-striped">
@@ -192,9 +179,9 @@
                                 <tr v-for="(detalhe, i) in vendaSelecionada.detalhes" :key="i">
                                     <td>{{ detalhe.id || 'N/A' }}</td>
                                     <td>{{ detalhe.quantidadeVendida }}</td>
-                                    <td>{{ detalhe.receita.toFixed(2) }}</td>
-                                    <td>{{ detalhe.custo.toFixed(2) }}</td>
-                                    <td>{{ detalhe.lucro.toFixed(2) }}</td>
+                                    <td>{{ formatarValor(detalhe.receita) }}</td>
+                                    <td>{{ formatarValor(detalhe.custo) }}</td>
+                                    <td>{{ formatarValor(detalhe.lucro) }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -214,273 +201,157 @@
 import { ref, computed, onMounted } from "vue";
 import { db } from "@/firebase/firebase";
 import {
-    collection,
-    getDocs,
-    doc,
-    updateDoc,
-    addDoc,
-    deleteDoc,
-    Timestamp,
-    query,
-    orderBy,
-    increment,
-    getDoc, 
+    collection, getDocs, doc, updateDoc, addDoc, deleteDoc, Timestamp,
+    query, orderBy, increment, getDoc
 } from "firebase/firestore";
 
 export default {
     setup() {
-        // Estado principal
-        const lotesParaVenda = ref([
-            {
-                docId: "",
-                quantidadeVendida: null,
-                pesoFinalTotal: null,
-                rendimentoCarcaça: null,
-            },
-        ]);
+        const lotesParaVenda = ref([{ docId: "", quantidadeVendida: null, pesoFinalTotal: null, rendimentoCarcaça: null }]);
         const cicloSelecionadoId = ref("");
         const precoArroba = ref(null);
         const lotes = ref([]);
         const ciclos = ref([]);
         const historico = ref([]);
-        const mensagem = ref(""); 
-
-        // NOVO: Estado para o modal de detalhes
+        const mensagem = ref("");
         const vendaSelecionada = ref(null);
-        
-        // Funções de Gerenciamento do Formulário
-        const adicionarLote = () => {
-            lotesParaVenda.value.push({
-                docId: "",
-                quantidadeVendida: null,
-                pesoFinalTotal: null,
-                rendimentoCarcaça: null,
-            });
-        };
-        const removerLote = (index) => {
-            if (lotesParaVenda.value.length > 1) {
-                lotesParaVenda.value.splice(index, 1);
-            }
-        }; 
 
-        const getQuantidadeOriginal = (loteDocId) => {
-            const lote = lotes.value.find((l) => l.docId === loteDocId);
-            return lote ? lote.quantidade : null;
-        }; 
+        const adicionarLote = () => lotesParaVenda.value.push({ docId: "", quantidadeVendida: null, pesoFinalTotal: null, rendimentoCarcaça: null });
+        const removerLote = (i) => lotesParaVenda.value.length > 1 && lotesParaVenda.value.splice(i, 1);
 
-        // Funções de Carregamento de Dados
+        const getQuantidadeOriginal = (id) => lotes.value.find(l => l.docId === id)?.quantidade || null;
+
         const carregarLotes = async () => {
             const snap = await getDocs(collection(db, "LotesConfinamento"));
-            lotes.value = snap.docs.map((doc) => {
-                const data = doc.data();
-                return {
-                    docId: doc.id,
-                    ...data,
-                    diasConfinamento: calcularDiasConfinamento(data.dataEntrada),
-                };
-            });
+            lotes.value = snap.docs.map(docSnap => ({
+                docId: docSnap.id,
+                ...docSnap.data(),
+                diasConfinamento: calcularDiasConfinamento(docSnap.data().dataEntrada),
+            }));
         };
+
         const carregarCiclos = async () => {
             const snap = await getDocs(collection(db, "CiclosGastos"));
-            ciclos.value = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            ciclos.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data(), total: doc.data().total || 0 }));
         };
-        const carregarHistorico = async () => {
-            const q = query(
-                collection(db, "RegistroVendasLotes"),
-                orderBy("dataVenda", "desc")
-            );
-            const snap = await getDocs(q);
-            historico.value = snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-        }; 
 
-        // Funções de Cálculo
+        const carregarHistorico = async () => {
+            const q = query(collection(db, "RegistroVendasLotes"), orderBy("dataVenda", "desc"));
+            const snap = await getDocs(q);
+            historico.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        };
+
         const calcularDiasConfinamento = (dataEntrada) => {
-            const entrada = dataEntrada.toDate
-                ? dataEntrada.toDate()
-                : new Date(dataEntrada);
+            const entrada = dataEntrada.toDate ? dataEntrada.toDate() : new Date(dataEntrada);
             const hoje = new Date();
             entrada.setHours(0, 0, 0, 0);
             hoje.setHours(0, 0, 0, 0);
             return Math.floor((hoje - entrada) / (1000 * 60 * 60 * 24));
         };
 
-        const calcularDetalhesLote = (loteVendido) => {
-            const loteOriginal = lotes.value.find(
-                (l) => l.docId === loteVendido.docId
-            );
-            const ciclo = ciclos.value.find((c) => c.id === cicloSelecionadoId.value);
-            if (
-                !loteOriginal ||
-                !ciclo ||
-                !precoArroba.value ||
-                !loteVendido.pesoFinalTotal ||
-                !loteVendido.quantidadeVendida ||
-                !loteVendido.rendimentoCarcaça
-            )
-                return null; 
+        const calcularDetalhesLote = (venda) => {
+            const lote = lotes.value.find(l => l.docId === venda.docId);
+            const ciclo = ciclos.value.find(c => c.id === cicloSelecionadoId.value);
+            if (!lote || !ciclo || !precoArroba.value || !venda.pesoFinalTotal || !venda.quantidadeVendida || !venda.rendimentoCarcaça) return null;
 
-            // CÁLCULO DE CUSTO
-            const custoPorAnimalIndireto = ciclo.total / ciclo.totalAnimais;
-            const custoPorCabecaDireto =
-                loteOriginal.custoCompraGado / loteOriginal.quantidade;
-            const custoPorCabecaTotal = custoPorAnimalIndireto + custoPorCabecaDireto;
-            const custoLote = loteVendido.quantidadeVendida * custoPorCabecaTotal; 
+            const custoIndireto = ciclo.total / (ciclo.totalAnimais || 1);
+            const custoDireto = (lote.custoCompraGado || 0) / (lote.quantidade || 1);
+            const custoTotalCabeca = custoIndireto + custoDireto;
+            const custoLote = venda.quantidadeVendida * custoTotalCabeca;
 
-            // CÁLCULO DE RECEITA
-            const pesoMedioPorCabecaVendida =
-                loteVendido.pesoFinalTotal / loteVendido.quantidadeVendida;
-            const pesoCarcaçaPorCabeca =
-                pesoMedioPorCabecaVendida * (loteVendido.rendimentoCarcaça / 100);
-            const arrobasPorCabeca = pesoCarcaçaPorCabeca / 15;
-            const receitaPorCabeca = arrobasPorCabeca * precoArroba.value;
-            const receitaLote = receitaPorCabeca * loteVendido.quantidadeVendida;
+            const pesoMedio = venda.pesoFinalTotal / venda.quantidadeVendida;
+            const pesoCarcaca = pesoMedio * (venda.rendimentoCarcaça / 100);
+            const arrobas = pesoCarcaca / 15;
+            const receitaLote = arrobas * precoArroba.value * venda.quantidadeVendida;
 
             return {
-                id: loteOriginal.id, // Usa o ID amigável do lote
-                quantidadeVendida: loteVendido.quantidadeVendida,
+                id: lote.id,
+                quantidadeVendida: venda.quantidadeVendida,
                 receita: receitaLote,
                 custo: custoLote,
                 lucro: receitaLote - custoLote,
             };
-        }; 
+        };
 
-        // Computeds
-        const lotesElegiveis = computed(() =>
-            lotes.value.filter((l) => l.diasConfinamento >= 90)
-        );
+        const lotesElegiveis = computed(() => lotes.value.filter(l => l.diasConfinamento >= 90));
+
         const receitaEstimada = computed(() =>
-            lotesParaVenda.value.reduce((total, lote) => {
-                const detalhes = calcularDetalhesLote(lote);
-                return total + (detalhes ? detalhes.receita : 0);
+            lotesParaVenda.value.reduce((t, l) => {
+                const det = calcularDetalhesLote(l);
+                return t + (det ? det.receita : 0);
             }, 0)
         );
-        const custoEstimado = computed(() =>
-            lotesParaVenda.value.reduce((total, lote) => {
-                const detalhes = calcularDetalhesLote(lote);
-                return total + (detalhes ? detalhes.custo : 0);
-            }, 0)
-        );
-        const lucroEstimado = computed(
-            () => receitaEstimada.value - custoEstimado.value
-        ); 
 
-        // Funções de Utilidade
+        const custoEstimado = computed(() =>
+            lotesParaVenda.value.reduce((t, l) => {
+                const det = calcularDetalhesLote(l);
+                return t + (det ? det.custo : 0);
+            }, 0)
+        );
+
+        const lucroEstimado = computed(() => receitaEstimada.value - custoEstimado.value);
+
         const formatarData = (d) => {
             const data = d?.toDate?.() || new Date(d);
             return data.toLocaleDateString("pt-BR");
-        }; 
-
-        // NOVO: Funções do Modal
-        const abrirDetalhes = (venda) => {
-            vendaSelecionada.value = venda;
         };
 
-        const fecharDetalhes = () => {
-            vendaSelecionada.value = null;
+        const formatarValor = (valor) => {
+            const num = parseFloat(valor);
+            return isNaN(num) ? "0.00" : num.toFixed(2);
         };
-        // Fim das novas funções
 
-        // Registrar venda
+        const abrirDetalhes = (v) => vendaSelecionada.value = v;
+        const fecharDetalhes = () => vendaSelecionada.value = null;
+
         const registrarVenda = async () => {
-            // ... (A lógica de validação e registro permanece a mesma)
-            if (
-                !lotesParaVenda.value.every(
-                    (l) =>
-                        l.docId &&
-                        l.quantidadeVendida > 0 &&
-                        l.pesoFinalTotal > 0 &&
-                        l.rendimentoCarcaça > 0
-                ) ||
-                !cicloSelecionadoId.value ||
-                !precoArroba.value
-            ) {
+            if (!lotesParaVenda.value.every(l => l.docId && l.quantidadeVendida > 0 && l.pesoFinalTotal > 0 && l.rendimentoCarcaça > 0) ||
+                !cicloSelecionadoId.value || !precoArroba.value) {
                 alert("Por favor, preencha todos os campos corretamente.");
                 return;
             }
-            const detalhesVenda = lotesParaVenda.value.map((lote) =>
-                calcularDetalhesLote(lote)
-            ).filter(detalhe => detalhe !== null); // Remove qualquer cálculo nulo
-            
+
+            const detalhes = lotesParaVenda.value.map(calcularDetalhesLote).filter(d => d);
             const venda = {
-                quantidade: lotesParaVenda.value.reduce(
-                    (total, lote) => total + (lote.quantidadeVendida || 0),
-                    0
-                ),
+                quantidade: lotesParaVenda.value.reduce((t, l) => t + (l.quantidadeVendida || 0), 0),
                 receita: receitaEstimada.value,
                 custo: custoEstimado.value,
                 lucro: lucroEstimado.value,
                 dataVenda: Timestamp.now(),
-                detalhes: detalhesVenda,
+                detalhes,
+                precoArroba: precoArroba.value,
+                cicloId: cicloSelecionadoId.value,
             };
-            await addDoc(collection(db, "RegistroVendasLotes"), venda); 
 
-            // Atualização e Deleção do Lote com incremento
-            for (const loteVendido of lotesParaVenda.value) {
-                try {
-                    const loteRef = doc(db, "LotesConfinamento", loteVendido.docId); 
-                    await updateDoc(loteRef, {
-                        quantidade: increment(-loteVendido.quantidadeVendida),
-                    }); 
-                    const loteSnap = await getDoc(loteRef);
-                    if (loteSnap.exists() && loteSnap.data().quantidade <= 0) {
-                        await deleteDoc(loteRef);
-                    }
-                } catch (error) {
-                    console.error("Erro ao atualizar lote confinado após a venda:", error);
-                    mensagem.value = "❌ Venda registrada, mas houve um erro na atualização do lote. Verifique o console.";
-                    return; 
-                }
+            await addDoc(collection(db, "RegistroVendasLotes"), venda);
+
+            for (const l of lotesParaVenda.value) {
+                const loteRef = doc(db, "LotesConfinamento", l.docId);
+                await updateDoc(loteRef, { quantidade: increment(-l.quantidadeVendida) });
+                const snap = await getDoc(loteRef);
+                if (snap.exists() && snap.data().quantidade <= 0) await deleteDoc(loteRef);
             }
-            mensagem.value = "✅ Venda registrada com sucesso!"; 
 
-            // Resetar o formulário
-            lotesParaVenda.value = [
-                {
-                    docId: "",
-                    quantidadeVendida: null,
-                    pesoFinalTotal: null,
-                    rendimentoCarcaça: null,
-                },
-            ];
+            mensagem.value = "✅ Venda registrada com sucesso!";
+            lotesParaVenda.value = [{ docId: "", quantidadeVendida: null, pesoFinalTotal: null, rendimentoCarcaça: null }];
             cicloSelecionadoId.value = "";
-            precoArroba.value = null; 
-
-            // Recarrega os dados
-            setTimeout(async () => {
-                await carregarLotes();
-                await carregarHistorico();
-            }, 50); 
-            
+            precoArroba.value = null;
+            await carregarLotes();
+            await carregarHistorico();
             setTimeout(() => (mensagem.value = ""), 4000);
         };
-        
+
         onMounted(() => {
             carregarLotes();
             carregarCiclos();
             carregarHistorico();
         });
-        
+
         return {
-            lotesParaVenda,
-            cicloSelecionadoId,
-            precoArroba,
-            lotesElegiveis,
-            ciclos,
-            historico,
-            receitaEstimada,
-            custoEstimado,
-            lucroEstimado,
-            adicionarLote,
-            removerLote,
-            getQuantidadeOriginal,
-            registrarVenda,
-            formatarData,
-            mensagem,
-            
-            // Expondo as novas refs/funções
-            vendaSelecionada,
-            abrirDetalhes,
-            fecharDetalhes,
+            lotesParaVenda, cicloSelecionadoId, precoArroba, lotesElegiveis, ciclos, historico,
+            receitaEstimada, custoEstimado, lucroEstimado, adicionarLote, removerLote,
+            getQuantidadeOriginal, registrarVenda, formatarData, formatarValor,
+            mensagem, vendaSelecionada, abrirDetalhes, fecharDetalhes
         };
     },
 };
@@ -490,29 +361,23 @@ export default {
 .container {
     max-width: 900px;
 }
-
-h2,
-h5 {
+h2, h5 {
     color: #004080;
 }
-
 .card {
     border-radius: 12px;
     border: 1px solid #dfe3e6;
 }
-
 .form-label {
     font-weight: 600;
     color: #333;
 }
-
 .btn-success {
     font-weight: bold;
     border-radius: 8px;
     padding: 10px;
     font-size: 1rem;
 }
-
 .alert-info {
     border-radius: 10px;
     background-color: #eaf4ff;
@@ -520,43 +385,18 @@ h5 {
     color: #004080;
     font-size: 0.95rem;
 }
-
-.table {
-    font-size: 0.9rem;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.table th,
-.table td {
-    text-align: center;
+.table th, .table td {
     vertical-align: middle;
+    text-align: center;
 }
-
-.table th {
-    background-color: #004080;
-    color: white;
-}
-
-.table-striped tbody tr:nth-of-type(odd) {
-    background-color: #f8f9fa;
-}
-
-.table-bordered {
-    border-radius: 8px;
-}
-
-/* NOVO CSS PARA O MODAL */
-.cursor-pointer {
+.cursor-pointer:hover {
+    background-color: #f0f8ff;
     cursor: pointer;
 }
-.modal.show {
-    /* Garante que o modal simples do Bootstrap apareça corretamente */
-    display: block;
-    padding-right: 17px; /* Para acomodar a barra de rolagem */
-    overflow-y: auto;
+.modal-backdrop {
+    z-index: 1040;
 }
-.modal-backdrop.show {
-    opacity: 0.5;
+.modal {
+    z-index: 1050;
 }
 </style>
