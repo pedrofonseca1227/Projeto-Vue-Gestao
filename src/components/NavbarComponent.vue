@@ -54,6 +54,9 @@
               <router-link to="/registrarVenda" class="nav-link" @click="fecharMenu">Registro Vendas</router-link>
             </li>
             <li class="nav-item">
+              <router-link to="/dashboardConfinamento" class="nav-link" @click="fecharMenu">Dashboard</router-link>
+            </li>
+            <li class="nav-item">
               <router-link to="/cicloGastos" class="nav-link" @click="fecharMenu">Ciclo Gastos</router-link>
             </li>
           </template>

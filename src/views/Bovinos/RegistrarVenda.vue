@@ -49,7 +49,7 @@
                 <div class="col-md-2 d-flex align-items-end">
                     <select v-model.number="vendaLote.rendimentoCarcaça" class="form-select" required>
                         <option disabled value="">Rendimento (%)</option>
-                        <option v-for="p in [55,56,57,58,59,60]" :key="p" :value="p">{{ p }}%</option>
+                        <option v-for="p in [55,56]" :key="p" :value="p">{{ p }}%</option>
                     </select>
                 </div>
 
@@ -201,8 +201,16 @@
 import { ref, computed, onMounted } from "vue";
 import { db } from "@/firebase/firebase";
 import {
-    collection, getDocs, doc, updateDoc, addDoc, deleteDoc, Timestamp,
-    query, orderBy, increment, getDoc
+    collection,
+    getDocs,
+    doc,
+    updateDoc,
+    addDoc,
+    deleteDoc,
+    Timestamp,
+    query,
+    orderBy,
+    getDoc
 } from "firebase/firestore";
 
 export default {
@@ -265,7 +273,7 @@ export default {
             const receitaLote = arrobas * precoArroba.value * venda.quantidadeVendida;
 
             return {
-                id: lote.id,
+                id: lote.docId,
                 quantidadeVendida: venda.quantidadeVendida,
                 receita: receitaLote,
                 custo: custoLote,
@@ -312,6 +320,7 @@ export default {
             }
 
             const detalhes = lotesParaVenda.value.map(calcularDetalhesLote).filter(d => d);
+
             const venda = {
                 quantidade: lotesParaVenda.value.reduce((t, l) => t + (l.quantidadeVendida || 0), 0),
                 receita: receitaEstimada.value,
@@ -323,21 +332,43 @@ export default {
                 cicloId: cicloSelecionadoId.value,
             };
 
+            // SALVAR A VENDA NO HISTÓRICO
             await addDoc(collection(db, "RegistroVendasLotes"), venda);
 
+            // ATUALIZAR LOTES
             for (const l of lotesParaVenda.value) {
                 const loteRef = doc(db, "LotesConfinamento", l.docId);
-                await updateDoc(loteRef, { quantidade: increment(-l.quantidadeVendida) });
                 const snap = await getDoc(loteRef);
-                if (snap.exists() && snap.data().quantidade <= 0) await deleteDoc(loteRef);
+
+                if (snap.exists()) {
+                    const dadosLote = snap.data();
+                    const quantidadeAntes = dadosLote.quantidade;
+                    const quantidadeVendida = l.quantidadeVendida;
+                    const custoTotalAntes = dadosLote.custoCompraGado;
+                    const novaQuantidade = quantidadeAntes - quantidadeVendida;
+
+                    if (novaQuantidade <= 0) {
+                        await deleteDoc(loteRef);
+                    } else {
+                        const custoPorCabeca = custoTotalAntes / quantidadeAntes;
+                        const novoCusto = custoPorCabeca * novaQuantidade;
+
+                        await updateDoc(loteRef, {
+                            quantidade: novaQuantidade,
+                            custoCompraGado: novoCusto,
+                        });
+                    }
+                }
             }
 
             mensagem.value = "✅ Venda registrada com sucesso!";
             lotesParaVenda.value = [{ docId: "", quantidadeVendida: null, pesoFinalTotal: null, rendimentoCarcaça: null }];
             cicloSelecionadoId.value = "";
             precoArroba.value = null;
+
             await carregarLotes();
             await carregarHistorico();
+
             setTimeout(() => (mensagem.value = ""), 4000);
         };
 
@@ -348,14 +379,30 @@ export default {
         });
 
         return {
-            lotesParaVenda, cicloSelecionadoId, precoArroba, lotesElegiveis, ciclos, historico,
-            receitaEstimada, custoEstimado, lucroEstimado, adicionarLote, removerLote,
-            getQuantidadeOriginal, registrarVenda, formatarData, formatarValor,
-            mensagem, vendaSelecionada, abrirDetalhes, fecharDetalhes
+            lotesParaVenda,
+            cicloSelecionadoId,
+            precoArroba,
+            lotesElegiveis,
+            ciclos,
+            historico,
+            receitaEstimada,
+            custoEstimado,
+            lucroEstimado,
+            adicionarLote,
+            removerLote,
+            getQuantidadeOriginal,
+            registrarVenda,
+            formatarData,
+            formatarValor,
+            mensagem,
+            vendaSelecionada,
+            abrirDetalhes,
+            fecharDetalhes,
         };
     },
 };
 </script>
+
 
 <style scoped>
 .container {
