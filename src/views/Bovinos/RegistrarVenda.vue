@@ -281,7 +281,14 @@ export default {
             };
         };
 
-        const lotesElegiveis = computed(() => lotes.value.filter(l => l.diasConfinamento >= 90));
+        const lotesElegiveis = computed(() =>
+          lotes.value.filter(l => {
+            const categoria = l.categoria?.toUpperCase().trim();
+            if (categoria === "FEMEA") return l.diasConfinamento >= 60;
+            if (categoria === "MACHO") return l.diasConfinamento >= 90;
+            return l.diasConfinamento >= 90;
+          })
+        );
 
         const receitaEstimada = computed(() =>
             lotesParaVenda.value.reduce((t, l) => {

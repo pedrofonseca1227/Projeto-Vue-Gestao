@@ -123,9 +123,10 @@
                             </td>
 
                             <td>
-                                <span class="badge" :class="calcularDiasConfinamento(lote.dataEntrada) >= 90 ? 'bg-success' : 'bg-warning'">
-                                    {{ calcularDiasConfinamento(lote.dataEntrada) >= 90 ? 'Pronto p/ Venda' : 'Em Confinamento' }}
-                                </span>
+                              <span class="badge"
+                                :class="ehProntoVenda(lote) ? 'bg-success' : 'bg-warning'">
+                                {{ ehProntoVenda(lote) ? 'Pronto p/ Venda' : 'Em Confinamento' }}
+                              </span>
                             </td>
 
                             <td>
@@ -247,6 +248,19 @@ export default {
             setTimeout(() => mensagem.value = '', 4000);
         };
 
+        const ehProntoVenda = (lote) => {
+          const dias = calcularDiasConfinamento(lote.dataEntrada);
+
+          // Garantir comparação segura (sem depender de acentuação ou capitalização)
+          const categoria = lote.categoria?.toUpperCase().trim();
+
+          if (categoria === "FEMEA") return dias >= 60;
+          if (categoria === "MACHO") return dias >= 90;
+
+          // Caso o campo esteja vazio ou diferente, exige o prazo máximo (segurança)
+          return dias >= 90;
+        };
+
         // 3. Funções para Edição (UPDATE)
         const abrirEdicao = (lote) => {
             // Usa o docId, que é o ID real do Firestore
@@ -320,7 +334,8 @@ export default {
             abrirEdicao,
             fecharEdicao,
             salvarEdicao,
-            excluirLote
+            excluirLote,
+            ehProntoVenda
         };
     }
 };
