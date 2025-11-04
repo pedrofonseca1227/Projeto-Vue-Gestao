@@ -76,6 +76,16 @@
                 </select>
             </div>
 
+            <div class="mb-3">
+              <label class="form-label">Data da Venda</label>
+              <input 
+                v-model="dataVendaSelecionada" 
+                type="date" 
+                class="form-control" 
+                required
+              />
+            </div>
+
             <!-- Campo de Preço Arroba -->
             <div class="mb-3">
                 <label class="form-label">Preço da Arroba (R$)</label>
@@ -223,6 +233,7 @@ export default {
         const historico = ref([]);
         const mensagem = ref("");
         const vendaSelecionada = ref(null);
+        const dataVendaSelecionada = ref("");
 
         const adicionarLote = () => lotesParaVenda.value.push({ docId: "", quantidadeVendida: null, pesoFinalTotal: null, rendimentoCarcaça: null });
         const removerLote = (i) => lotesParaVenda.value.length > 1 && lotesParaVenda.value.splice(i, 1);
@@ -273,7 +284,7 @@ export default {
             const receitaLote = arrobas * precoArroba.value * venda.quantidadeVendida;
 
             return {
-                id: lote.docId,
+                id: lote.id || lote.docId,
                 quantidadeVendida: venda.quantidadeVendida,
                 receita: receitaLote,
                 custo: custoLote,
@@ -333,7 +344,7 @@ export default {
                 receita: receitaEstimada.value,
                 custo: custoEstimado.value,
                 lucro: lucroEstimado.value,
-                dataVenda: Timestamp.now(),
+                dataVenda: dataVendaSelecionada.value  ? Timestamp.fromDate(new Date(dataVendaSelecionada.value)): Timestamp.now(),
                 detalhes,
                 precoArroba: precoArroba.value,
                 cicloId: cicloSelecionadoId.value,
@@ -405,6 +416,7 @@ export default {
             vendaSelecionada,
             abrirDetalhes,
             fecharDetalhes,
+            dataVendaSelecionada,
         };
     },
 };

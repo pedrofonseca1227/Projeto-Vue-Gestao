@@ -11,7 +11,6 @@
 
     <GraficoLucroMensal :dados="dadosLucroMensal" class="mb-4" />
     <GraficoDistribuicao :dados="dadosDistribuicao" class="mb-4" />
-    <GraficoRendimento :dados="dadosRendimento" />
   </div>
 </template>
 
@@ -22,10 +21,9 @@ import { collection, getDocs } from "firebase/firestore";
 import CardResumo from "@/components/relatorios/CardResumo.vue";
 import GraficoLucroMensal from "@/components/relatorios/GraficoLucroMensal.vue";
 import GraficoDistribuicao from "@/components/relatorios/GraficoDistribuicao.vue";
-import GraficoRendimento from "@/components/relatorios/GraficoRendimento.vue";
 
 export default {
-  components: { CardResumo, GraficoLucroMensal, GraficoDistribuicao, GraficoRendimento },
+  components: { CardResumo, GraficoLucroMensal, GraficoDistribuicao  },
   setup() {
     const dadosLucroMensal = ref([]);
     const dadosDistribuicao = ref([]);
