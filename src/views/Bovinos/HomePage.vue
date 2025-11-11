@@ -79,7 +79,8 @@
         <p>
             Total Pasto: <strong>{{ totalBovinos }}</strong>
             Total Confinamento: <strong>{{ totalAnimaisConfinamento }}</strong>
-            Total Geral: <strong>{{ totalBovinos + totalAnimaisConfinamento }}</strong>
+            Total St André: <strong>{{ resumoContagemStAndre }}</strong>
+            Total Geral: <strong>{{ totalBovinos + totalAnimaisConfinamento + resumoContagemStAndre }}</strong>
         </p>
       </div>
     </div>
@@ -150,6 +151,9 @@ export default {
             if (unsubscribeConfinamento) {
                 unsubscribeConfinamento();
             }
+            if (unsubscribeStAndre) {
+                unsubscribeStAndre();
+            }
         });
 
         // Computed para o resumo do Pasto (Lógica inalterada)
@@ -205,6 +209,18 @@ export default {
         const totalAnimaisConfinamento = computed(() =>
             lotesConfinamento.value.reduce((sum, lote) => sum + (lote.quantidade || 0), 0)
         );
+
+        const resumoContagemStAndre = ref(0); // 🔹 Valor inicial
+        let unsubscribeStAndre = null; // 🔹 Para parar de escutar depois
+          
+        onMounted(() => {
+          // Escuta em tempo real a coleção GadoPastoStAndre
+          const stAndreRef = collection(db, 'GadoPastoStAndre');
+          unsubscribeStAndre = onSnapshot(stAndreRef, (snapshot) => {
+            // Atualiza o total sempre que há mudança no Firestore
+            resumoContagemStAndre.value = snapshot.size;
+          });
+        });
 
 
         const dataAtualFormatada = new Date().toLocaleDateString('pt-BR', {
@@ -268,7 +284,8 @@ export default {
         // Retorna todas as variáveis necessárias
         return {
             resumo,
-            resumoConfinamento, // Variável correta para o resumo do confinamento
+            resumoConfinamento,
+            resumoContagemStAndre, // Variável correta para o resumo do confinamento
             totalBovinos,
             totalAnimais: totalAnimaisConfinamento, 
             totalAnimaisConfinamento,

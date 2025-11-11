@@ -17,6 +17,7 @@ import GastosTrimestrais from '@/views/Bovinos/CicloGastos.vue';
 import StAndre from '@/views/StAndre/StAndre.vue';
 import DashboardConfinamento from '@/views/Bovinos/DashboardConfinamento.vue';
 import RelatoriosAnaliticos from '@/views/Bovinos/RelatoriosAnaliticos.vue';
+import AdicionarPastoStAndre from '@/views/StAndre/AdicionarPastoStAndre.vue';
 
 const routes = [
   { path: '/', name: 'Login', component: LoginPage },
@@ -34,6 +35,7 @@ const routes = [
   { path: '/StAndre', name: 'StAndre', component: StAndre, meta: { requiresAuth: true } },
   { path: '/dashboardConfinamento', name: 'DashboardConfinamento', component: DashboardConfinamento, meta: { requiresAuth: true } },
   { path: '/relatoriosAnaliticos', name: 'RelatoriosAnaliticos', component: RelatoriosAnaliticos, meta: { requiresAuth: true } },
+  {path: '/adicionarPastoStAndre', name: 'AdicionarPastoStAndre', component: AdicionarPastoStAndre, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({
