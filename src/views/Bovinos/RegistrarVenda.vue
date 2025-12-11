@@ -19,7 +19,7 @@
                         </option>
                     </select>
                 </div>
-
+ 
                 <!-- Quantidade -->
                 <div class="col-md-3">
                     <label class="form-label">Quantidade a Vender</label>
@@ -49,7 +49,7 @@
                 <div class="col-md-2 d-flex align-items-end">
                     <select v-model.number="vendaLote.rendimentoCarcaça" class="form-select" required>
                         <option disabled value="">Rendimento (%)</option>
-                        <option v-for="p in [55,56]" :key="p" :value="p">{{ p }}%</option>
+                        <option v-for="p in [55,56,50]" :key="p" :value="p">{{ p }}%</option>
                     </select>
                 </div>
 
