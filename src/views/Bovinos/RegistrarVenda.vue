@@ -96,7 +96,7 @@
                     class="form-control"
                     placeholder="Ex: 290.00"
                     required
-                />
+                /> 
             </div>
 
             <!-- Resumo -->
