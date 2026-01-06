@@ -45,7 +45,9 @@
       <div class="col-6 col-md-4 col-lg-2">
         <div class="card bg-primary text-white shadow-sm rounded">
           <div class="card-body p-2">
-            <h6 class="mb-1 text-uppercase" style="font-size: 0.75rem">Total</h6>
+            <h6 class="mb-1 text-uppercase" style="font-size: 0.75rem">
+              Total
+            </h6>
             <h5 class="fw-bold">{{ totalBovinos }}</h5>
           </div>
         </div>
@@ -92,102 +94,133 @@
     </div>
   </div>
 </template>
+
 <script>
-import { onMounted, ref, computed } from 'vue'
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore'
-import { db } from '@/firebase/firebase.js'
-import jsPDF from 'jspdf'
-import logoImage from '@/assets/LogoPdf.jpg'
+import { onMounted, ref, computed } from "vue";
+import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { db } from "@/firebase/firebase.js";
+import jsPDF from "jspdf";
+import logoImage from "@/assets/LogoPdf.jpg";
 
 export default {
   setup() {
-    const bovinos = ref([])
-    const filtro = ref({ nome: '' })
+    const bovinos = ref([]);
+    const filtro = ref({ nome: "" });
 
-    // 🔥 AQUI É O PONTO-CHAVE
     onMounted(() => {
       const q = query(
-        collection(db, 'GadoPastoStAndre'),
-        orderBy('nome')
-      )
+        collection(db, "GadoPastoStAndre"),
+        orderBy("nome")
+      );
 
       onSnapshot(q, (snapshot) => {
-        bovinos.value = snapshot.docs.map(doc => doc.data())
-      })
-    })
+        bovinos.value = snapshot.docs.map((doc) => doc.data());
+      });
+    });
 
     const bovinosFiltrados = computed(() =>
       bovinos.value.filter((b) =>
         b.nome?.toLowerCase().includes(filtro.value.nome.toLowerCase())
       )
-    )
+    );
 
+    // 🔹 CONTAGEM COMPLETA + BOIS
     const resumoContagem = computed(() => {
       let vacas = 0,
         vacasSN = 0,
         touros = 0,
+        bois = 0,
         bezerrosMacho = 0,
         bezerrosFemea = 0,
-        bezerrosDesmama = 0
+        bezerrosDesmama = 0;
 
       bovinos.value.forEach((b) => {
-        const nome = b.nome?.toLowerCase() || ''
-        const sexo = b.sexo?.trim().toLowerCase()
+        const nome = (b.nome || "").toLowerCase();
+        const sexo = (b.sexo || "").toLowerCase();
 
-        if (nome.includes('vaca') && !nome.includes('s/b')) vacas++
-        else if (nome.includes('vaca') && nome.includes('s/b')) vacasSN++
-        else if (nome.includes('touro')) touros++
-        else if (nome.includes('bezerro') && sexo === 'fêmea') bezerrosFemea++
-
-        if (nome.includes('bezerro') && sexo === 'macho') {
-          if (nome.includes('desmama')) bezerrosDesmama++
-          else bezerrosMacho++
+        if (nome.includes("vaca") && !nome.includes("s/b")) {
+          vacas++;
+          return;
         }
-      })
+
+        if (nome.includes("vaca") && nome.includes("s/b")) {
+          vacasSN++;
+          return;
+        }
+
+        if (nome.includes("touro")) {
+          touros++;
+          return;
+        }
+
+        if (nome.includes("bezerro")) {
+          if (sexo === "macho") {
+            if (nome.includes("desmama")) bezerrosDesmama++;
+            else bezerrosMacho++;
+          } else if (sexo === "fêmea" || sexo === "femea") {
+            bezerrosFemea++;
+          }
+          return;
+        }
+
+        // ✅ BOIS
+        if (
+          sexo === "macho" &&
+          !nome.includes("bezerro") &&
+          !nome.includes("touro")
+        ) {
+          bois++;
+          return;
+        }
+      });
 
       return {
         Vacas: vacas,
-        'Vacas S/B': vacasSN,
+        "Vacas S/B": vacasSN,
         Touros: touros,
-        'Bezerros Macho': bezerrosMacho,
-        'Bezerros Fêmea': bezerrosFemea,
-        'Bezerros Desmama': bezerrosDesmama
-      }
-    })
+        Bois: bois,
+        "Bezerros Macho": bezerrosMacho,
+        "Bezerros Fêmea": bezerrosFemea,
+        "Bezerros Desmama": bezerrosDesmama,
+      };
+    });
 
-    const totalBovinos = computed(() => bovinos.value.length)
+    const totalBovinos = computed(() => bovinos.value.length);
 
     const sexoBadgeClass = (sexo) => {
-      const s = sexo?.toLowerCase()
-      if (s === 'macho') return 'badge bg-primary'
-      if (s === 'fêmea' || s === 'femea') return 'badge bg-warning text-dark'
-      return 'badge bg-secondary'
-    }
+      const s = sexo?.toLowerCase();
+      if (s === "macho") return "badge bg-primary";
+      if (s === "fêmea" || s === "femea")
+        return "badge bg-warning text-dark";
+      return "badge bg-secondary";
+    };
 
     const exportToPDF = () => {
-      const doc = new jsPDF()
-      const marginLeft = 20
-      const pageWidth = doc.internal.pageSize.getWidth()
-      const centerX = pageWidth / 2
+      const doc = new jsPDF();
+      const marginLeft = 20;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const centerX = pageWidth / 2;
 
-      const img = new Image()
-      img.src = logoImage
+      const img = new Image();
+      img.src = logoImage;
 
-      doc.addImage(img, 'JPEG', marginLeft, 10, 30, 30)
-      doc.setFontSize(20)
-      doc.text('Relatório de Contagem – St. André', centerX, 45, { align: 'center' })
+      doc.addImage(img, "JPEG", marginLeft, 10, 30, 30);
+      doc.setFontSize(20);
+      doc.text("Relatório de Contagem – St. André", centerX, 45, {
+        align: "center",
+      });
 
-      let y = 80
-      const resumo = resumoContagem.value
+      let y = 80;
+      const resumo = resumoContagem.value;
 
       for (const chave in resumo) {
-        doc.text(`• ${chave}: ${resumo[chave]}`, marginLeft, y)
-        y += 10
+        doc.text(`• ${chave}: ${resumo[chave]}`, marginLeft, y);
+        y += 10;
       }
 
-      doc.text(`• Total: ${totalBovinos.value}`, marginLeft, y)
-      doc.save('Resumo_Gado_StAndre.pdf')
-    }
+      doc.text(`• Total: ${totalBovinos.value}`, marginLeft, y);
+      doc.save("Resumo_Gado_StAndre.pdf");
+    };
 
     return {
       filtro,
@@ -195,8 +228,8 @@ export default {
       resumoContagem,
       totalBovinos,
       exportToPDF,
-      sexoBadgeClass
-    }
-  }
-}
+      sexoBadgeClass,
+    };
+  },
+};
 </script>

@@ -47,7 +47,14 @@
       </div>
     </div>
 
-    <!-- Resumo da Contagem -->
+    <!-- 🔹 Botão novo: PDF só dos Resumos -->
+    <div class="text-end mb-3">
+      <button class="btn btn-outline-danger" @click="exportToPDFResumos">
+        🧾 Exportar PDF (Somente Resumos)
+      </button>
+    </div>
+
+    <!-- Resumo Pasto -->
     <div class="card shadow-sm mb-4">
       <div class="card-body text-center">
         <h4 class="mb-4">📊 Resumo Pasto</h4>
@@ -57,30 +64,49 @@
           Touros: <strong>{{ resumo.touros }}</strong> |
           Bezerros Machos: <strong>{{ resumo.bezerrosMacho }}</strong> |
           Bezerros Fêmeas: <strong>{{ resumo.bezerrosFemea }}</strong> |
-          Bezerros Desmama: <strong>{{ resumo.bezerrosDesmama }}</strong> |
+          Bezerros Desmama: <strong>{{ resumo.bezerrosDesmama }}</strong>
         </p>
       </div>
     </div>
 
+    <!-- ✅ NOVO: Resumo St André (igual do Pasto + Bois) -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body text-center">
+        <h4 class="mb-4">📊 Resumo St. André</h4>
+        <p>
+          Vacas: <strong>{{ resumoStAndre.vacas }}</strong> |
+          Vacas S/B: <strong>{{ resumoStAndre.vacasSN }}</strong> |
+          Touros: <strong>{{ resumoStAndre.touros }}</strong> |
+          Bois: <strong>{{ resumoStAndre.bois }}</strong> |
+          Bezerros Machos: <strong>{{ resumoStAndre.bezerrosMacho }}</strong> |
+          Bezerros Fêmeas: <strong>{{ resumoStAndre.bezerrosFemea }}</strong> |
+          Bezerros Desmama: <strong>{{ resumoStAndre.bezerrosDesmama }}</strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- Resumo Confinamento -->
     <div class="card shadow-sm mb-4">
       <div class="card-body text-center">
         <h4 class="mb-4">📊 Resumo Confinamento</h4>
         <p>
-          Vacas/Fêmeas: <strong>{{ resumoConfinamento.femeas }}</strong> | 
-          Bois/Machos: <strong>{{ resumoConfinamento.machos }}</strong> | 
+          Vacas/Fêmeas: <strong>{{ resumoConfinamento.femeas }}</strong> |
+          Bois/Machos: <strong>{{ resumoConfinamento.machos }}</strong> |
           Total: <strong>{{ totalAnimais }}</strong>
         </p>
       </div>
     </div>
 
+    <!-- Resumo Geral -->
     <div class="card shadow-sm mb-4">
       <div class="card-body text-center">
         <h4 class="mb-4">📊 Resumo Geral</h4>
         <p>
-            Total Pasto: <strong>{{ totalBovinos }}</strong>
-            Total Confinamento: <strong>{{ totalAnimaisConfinamento }}</strong>
-            Total St André: <strong>{{ resumoContagemStAndre }}</strong>
-            Total Geral: <strong>{{ totalBovinos + totalAnimaisConfinamento + resumoContagemStAndre }}</strong>
+          Total Pasto: <strong>{{ totalBovinos }}</strong> |
+          Total Confinamento: <strong>{{ totalAnimaisConfinamento }}</strong> |
+          Total St. André: <strong>{{ totalStAndre }}</strong> |
+          Total Geral:
+          <strong>{{ totalBovinos + totalAnimaisConfinamento + totalStAndre }}</strong>
         </p>
       </div>
     </div>
@@ -111,190 +137,279 @@
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script>
-import { onMounted, onUnmounted, ref, computed } from 'vue'; // Importe onUnmounted
-import { collection, onSnapshot } from 'firebase/firestore';
-import { db } from '@/firebase/firebase';
-import jsPDF from 'jspdf';
-import logoImage from '@/assets/LogoPdf.jpg';
+import { onMounted, onUnmounted, ref, computed } from 'vue'
+import { collection, onSnapshot } from 'firebase/firestore'
+import { db } from '@/firebase/firebase'
+import jsPDF from 'jspdf'
+import logoImage from '@/assets/LogoPdf.jpg'
 
 export default {
-    setup() {
-        const bovinos = ref([]); // Dados do Pasto (Coleção GadoPasto)
-        const lotesConfinamento = ref([]); // Dados do Confinamento (Coleção LotesConfinamento)
+  setup() {
+    const bovinos = ref([]) // Pasto
+    const lotesConfinamento = ref([]) // Confinamento
+    const stAndre = ref([]) // ✅ St André (lista completa)
+
+    let unsubscribePasto = null
+    let unsubscribeConfinamento = null
+    let unsubscribeStAndre = null
+
+    onMounted(() => {
+      // Pasto
+      unsubscribePasto = onSnapshot(collection(db, 'GadoPasto'), (snapshot) => {
+        bovinos.value = snapshot.docs.map((doc) => doc.data())
+      })
+
+      // Confinamento
+      unsubscribeConfinamento = onSnapshot(collection(db, 'LotesConfinamento'), (snapshot) => {
+        lotesConfinamento.value = snapshot.docs.map((doc) => doc.data())
+      })
+
+      // ✅ St André
+      unsubscribeStAndre = onSnapshot(collection(db, 'GadoPastoStAndre'), (snapshot) => {
+        stAndre.value = snapshot.docs.map((doc) => doc.data())
+      })
+    })
+
+    onUnmounted(() => {
+      if (unsubscribePasto) unsubscribePasto()
+      if (unsubscribeConfinamento) unsubscribeConfinamento()
+      if (unsubscribeStAndre) unsubscribeStAndre()
+    })
+
+    // ===== Resumo Pasto =====
+    const resumo = computed(() => {
+      let vacas = 0,
+        vacasSN = 0,
+        touros = 0,
+        bezerrosMacho = 0,
+        bezerrosFemea = 0,
+        bezerrosDesmama = 0
+
+      bovinos.value.forEach((b) => {
+        const nome = b.nome?.toLowerCase() || ''
+        const sexo = b.sexo?.trim().toLowerCase()
+
+        if (nome.includes('vaca') && !nome.includes('s/b')) vacas++
+        else if (nome.includes('vaca') && nome.includes('s/b')) vacasSN++
+        else if (nome.includes('touro')) touros++
+        else if (nome.includes('bezerro') && sexo === 'fêmea') bezerrosFemea++
+
+        if (nome.includes('bezerro') && sexo === 'macho') {
+          if (nome.includes('desmama')) bezerrosDesmama++
+          else bezerrosMacho++
+        }
+      })
+
+      return { vacas, vacasSN, touros, bezerrosMacho, bezerrosFemea, bezerrosDesmama }
+    })
+
+    const totalBovinos = computed(() => bovinos.value.length)
+
+    // ===== Resumo Confinamento =====
+    const resumoConfinamento = computed(() => {
+      let machos = 0
+      let femeas = 0
+
+      lotesConfinamento.value.forEach((lote) => {
+        const categoria = lote.categoria?.trim().toUpperCase()
+        const quantidade = lote.quantidade || 0
+
+        if (categoria === 'MACHO') machos += quantidade
+        else if (categoria === 'FEMEA') femeas += quantidade
+      })
+
+      return { machos, femeas }
+    })
+
+    const totalAnimaisConfinamento = computed(() =>
+      lotesConfinamento.value.reduce((sum, lote) => sum + (lote.quantidade || 0), 0)
+    )
+
+    // ===== ✅ Resumo St André (igual Pasto + Bois) =====
+    const resumoStAndre = computed(() => {
+      let vacas = 0,
+        vacasSN = 0,
+        touros = 0,
+        bois = 0,
+        bezerrosMacho = 0,
+        bezerrosFemea = 0,
+        bezerrosDesmama = 0
+
+      stAndre.value.forEach((b) => {
+        const nome = (b.nome || '').toLowerCase()
+        const sexo = (b.sexo || '').toLowerCase()
+
+        if (nome.includes('vaca') && !nome.includes('s/b')) {
+          vacas++
+          return
+        }
+
+        if (nome.includes('vaca') && nome.includes('s/b')) {
+          vacasSN++
+          return
+        }
+
+        if (nome.includes('touro')) {
+          touros++
+          return
+        }
+
+        if (nome.includes('bezerro')) {
+          if (sexo === 'macho') {
+            if (nome.includes('desmama')) bezerrosDesmama++
+            else bezerrosMacho++
+          } else if (sexo === 'fêmea' || sexo === 'femea') {
+            bezerrosFemea++
+          }
+          return
+        }
+
+        // ✅ Bois: macho adulto (não touro, não bezerro)
+        if (sexo === 'macho' && !nome.includes('bezerro') && !nome.includes('touro')) {
+          bois++
+          return
+        }
+      })
+
+      return { vacas, vacasSN, touros, bois, bezerrosMacho, bezerrosFemea, bezerrosDesmama }
+    })
+
+    const totalStAndre = computed(() => stAndre.value.length)
+
+    // Data
+    const dataAtualFormatada = new Date().toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    })
+
+    // ✅ PDF só com os resumos
+    const exportToPDFResumos = () => {
+      const doc = new jsPDF();
+      const marginLeft = 20;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const centerX = pageWidth / 2;
         
-        let unsubscribePasto = null;
-        let unsubscribeConfinamento = null;
+      // 🔹 FUNÇÃO DE LIMPEZA (AQUI MESMO)
+      const limparTextoPDF = (txt = "") => {
+        return txt
+          .replace(/[^\x20-\x7EÀ-ÿ]/g, "") // remove símbolos estranhos
+          .replace(/\s+/g, " ")
+          .trim();
+      };
+    
+      const img = new Image();
+      img.src = logoImage;
+    
+      doc.addImage(img, "JPEG", marginLeft, 10, 30, 30);
+    
+      doc.setFontSize(18);
+      doc.text(
+        limparTextoPDF("Relatório - Resumos do Sistema"),
+        centerX,
+        25,
+        { align: "center" }
+      );
+    
+      doc.setFontSize(11);
+      doc.text(
+        limparTextoPDF(`Data: ${dataAtualFormatada}`),
+        centerX,
+        33,
+        { align: "center" }
+      );
+    
+      let y = 45;
+    
+      // 🔹 Resumo Pasto
+      doc.setFontSize(13);
+      doc.text(limparTextoPDF("Resumo Pasto"), marginLeft, y);
+      y += 8;
+    
+      doc.setFontSize(11);
+      doc.text(limparTextoPDF(`• Vacas: ${resumo.value.vacas}`), marginLeft, y); y += 6;
+      doc.text(limparTextoPDF(`• Vacas S/B: ${resumo.value.vacasSN}`), marginLeft, y); y += 6;
+      doc.text(limparTextoPDF(`• Touros: ${resumo.value.touros}`), marginLeft, y); y += 6;
+      doc.text(limparTextoPDF(`• Bezerros Machos: ${resumo.value.bezerrosMacho}`), marginLeft, y); y += 6;
+      doc.text(limparTextoPDF(`• Bezerros Fêmeas: ${resumo.value.bezerrosFemea}`), marginLeft, y); y += 6;
+      doc.text(limparTextoPDF(`• Bezerros Desmama: ${resumo.value.bezerrosDesmama}`), marginLeft, y); y += 6;
 
-        onMounted(() => {
-            // 1. Carregar Gado do Pasto (GadoPasto)
-            const pastoRef = collection(db, "GadoPasto");
-            unsubscribePasto = onSnapshot(pastoRef, (snapshot) => {
-                bovinos.value = snapshot.docs.map(doc => doc.data());
-            });
-
-            // 2. Carregar Lotes de Confinamento (LotesConfinamento)
-            const confinamentoRef = collection(db, "LotesConfinamento");
-            unsubscribeConfinamento = onSnapshot(confinamentoRef, (snapshot) => {
-                lotesConfinamento.value = snapshot.docs.map(doc => doc.data());
-            });
-        });
-
-        // NOVO: Adicione onUnmounted para limpar as escutas do Firebase
-        onUnmounted(() => {
-            if (unsubscribePasto) {
-                unsubscribePasto();
-            }
-            if (unsubscribeConfinamento) {
-                unsubscribeConfinamento();
-            }
-            if (unsubscribeStAndre) {
-                unsubscribeStAndre();
-            }
-        });
-
-        // Computed para o resumo do Pasto (Lógica inalterada)
-        const resumo = computed(() => {
-            let vacas = 0,
-                vacasSN = 0,
-                touros = 0,
-                bezerrosMacho = 0,
-                bezerrosFemea = 0,
-                bezerrosDesmama = 0;
-
-            bovinos.value.forEach((b) => {
-                const nome = b.nome?.toLowerCase() || '';
-                const sexo = b.sexo?.trim().toLowerCase();
-
-                if (nome.includes('vaca') && !nome.includes('s/b')) vacas++;
-                else if (nome.includes('vaca') && nome.includes('s/b')) vacasSN++;
-                else if (nome.includes('touro')) touros++;
-                else if (nome.includes('bezerro') && sexo === 'fêmea') bezerrosFemea++;
-
-                if (nome.includes('bezerro') && sexo === 'macho') {
-                    if (nome.includes('desmama')) bezerrosDesmama++;
-                    else bezerrosMacho++;
-                }
-            });
-
-            return { vacas, vacasSN, touros, bezerrosMacho, bezerrosFemea, bezerrosDesmama };
-        });
-
-        // Computed para o Total de Animais no Pasto
-        const totalBovinos = computed(() => bovinos.value.length);
-
-        // Resumo de Categoria (MACHO/FEMEA) para o Confinamento (Lógica inalterada)
-        const resumoConfinamento = computed(() => {
-            let machos = 0;
-            let femeas = 0;
-
-            lotesConfinamento.value.forEach(lote => {
-                const categoria = lote.categoria?.trim().toUpperCase();
-                const quantidade = lote.quantidade || 0; 
-                
-                if (categoria === 'MACHO') {
-                    machos += quantidade;
-                } else if (categoria === 'FEMEA') {
-                    femeas += quantidade;
-                }
-            });
-
-            return { machos, femeas };
-        });
-
-        // Computed para o Total de Animais no Confinamento (Lógica inalterada)
-        const totalAnimaisConfinamento = computed(() =>
-            lotesConfinamento.value.reduce((sum, lote) => sum + (lote.quantidade || 0), 0)
-        );
-
-        const resumoContagemStAndre = ref(0); // 🔹 Valor inicial
-        let unsubscribeStAndre = null; // 🔹 Para parar de escutar depois
-          
-        onMounted(() => {
-          // Escuta em tempo real a coleção GadoPastoStAndre
-          const stAndreRef = collection(db, 'GadoPastoStAndre');
-          unsubscribeStAndre = onSnapshot(stAndreRef, (snapshot) => {
-            // Atualiza o total sempre que há mudança no Firestore
-            resumoContagemStAndre.value = snapshot.size;
-          });
-        });
+    
+      y += 6;
+    
+      // 🔹 Resumo St. André (sem emoji)
+      doc.setFontSize(13);
+      doc.text(limparTextoPDF("Resumo St. Andre"), marginLeft, y);
+      y += 8;
+    
+      doc.setFontSize(11);
+      doc.text(limparTextoPDF(`• Vacas: ${resumoStAndre.value.vacas}`), marginLeft, y); y += 6;
+      doc.text(limparTextoPDF(`• Bois: ${resumoStAndre.value.bois}`), marginLeft, y); y += 6;
+    
+      y += 6;
+    
+      // 🔹 Resumo Confinamento
+      doc.setFontSize(13);
+      doc.text(limparTextoPDF("Resumo Confinamento"), marginLeft, y);
+      y += 8;
+    
+      doc.setFontSize(11);
+      doc.text(limparTextoPDF(`• Fêmeas: ${resumoConfinamento.value.femeas}`), marginLeft, y); y += 6;
+      doc.text(limparTextoPDF(`• Machos: ${resumoConfinamento.value.machos}`), marginLeft, y); y += 6;
+      doc.text(limparTextoPDF(`• Total: ${totalAnimaisConfinamento.value}`), marginLeft, y); y += 10;
+    
+      // 🔹 Resumo Geral
+      doc.setFontSize(13);
+      doc.text(limparTextoPDF("Resumo Geral"), marginLeft, y);
+      y += 8;
+    
+      doc.setFontSize(11);
+      doc.text(
+        limparTextoPDF(
+          `• Total Geral: ${
+            totalBovinos.value +
+            totalAnimaisConfinamento.value +
+            totalStAndre.value
+          }`
+        ),
+        marginLeft,
+        y
+      );
+    
+      doc.save("Relatorio_Resumos.pdf");
+    };
 
 
-        const dataAtualFormatada = new Date().toLocaleDateString('pt-BR', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-        });
+    // Últimos animais Pasto (mantido)
+    const ultimosAnimais = computed(() => {
+      return [...bovinos.value]
+        .sort((a, b) => {
+          const dataA = new Date(a.createdAt?.seconds * 1000 || 0)
+          const dataB = new Date(b.createdAt?.seconds * 1000 || 0)
+          return dataB - dataA
+        })
+        .slice(0, 5)
+    })
 
-        // Lógica de exportação para PDF (mantida)
-        const exportToPDF = () => {
-            const doc = new jsPDF();
-            const marginLeft = 20;
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const centerX = pageWidth / 2;
-
-            const img = new Image();
-            img.src = logoImage;
-
-            doc.addImage(img, 'JPEG', marginLeft, 10, 30, 30);
-            doc.setFontSize(20);
-            doc.setTextColor(33, 37, 41);
-            doc.text('Relatório de Contagem de Bovinos Pasto', centerX, 45, { align: 'center' });
-
-            doc.setFontSize(12);
-            doc.setTextColor(100, 100, 100);
-            doc.text('Resumo geral da contagem de bovinos cadastrados no sistema.', marginLeft, 60, { maxWidth: 170 });
-
-            doc.setLineWidth(0.5);
-            doc.line(marginLeft, 70, pageWidth - marginLeft, 70);
-
-            let y = 80;
-            const r = resumo.value;
-
-            doc.setFontSize(14);
-            doc.setTextColor(33, 37, 41);
-            doc.text('Resumo de Contagem', marginLeft, y); y += 10;
-
-            doc.setFontSize(12);
-            doc.setTextColor(0, 0, 0);
-            doc.text(`• Vacas: ${r.vacas}`, marginLeft, y); y += 10;
-            doc.text(`• Vacas S/B: ${r.vacasSN}`, marginLeft, y); y += 10;
-            doc.text(`• Touros: ${r.touros}`, marginLeft, y); y += 10;
-            doc.text(`• Bezerros Macho: ${r.bezerrosMacho}`, marginLeft, y); y += 10;
-            doc.text(`• Bezerros Fêmea: ${r.bezerrosFemea}`, marginLeft, y); y += 10;
-            doc.text(`• Bezerros Desmama: ${r.bezerrosDesmama}`, marginLeft, y); y += 10;
-            doc.text(`• Total: ${totalBovinos.value}`, marginLeft, y); y += 20;
-
-            doc.save('Resumo_Home.pdf');
-        };
-
-        const ultimosAnimais = computed(() => {
-            return [...bovinos.value]
-                .sort((a, b) => {
-                    const dataA = new Date(a.createdAt?.seconds * 1000 || 0);
-                    const dataB = new Date(b.createdAt?.seconds * 1000 || 0);
-                    return dataB - dataA;
-                })
-                .slice(0, 5);
-        });
-
-        // Retorna todas as variáveis necessárias
-        return {
-            resumo,
-            resumoConfinamento,
-            resumoContagemStAndre, // Variável correta para o resumo do confinamento
-            totalBovinos,
-            totalAnimais: totalAnimaisConfinamento, 
-            totalAnimaisConfinamento,
-            exportToPDF,
-            dataAtualFormatada,
-            ultimosAnimais
-        };
+    return {
+      resumo,
+      resumoConfinamento,
+      resumoStAndre,
+      totalBovinos,
+      totalAnimais: totalAnimaisConfinamento,
+      totalAnimaisConfinamento,
+      totalStAndre,
+      exportToPDFResumos,
+      dataAtualFormatada,
+      ultimosAnimais
     }
-};
+  }
+}
 </script>
 
 <style scoped>
@@ -334,4 +449,3 @@ export default {
   }
 }
 </style>
-
