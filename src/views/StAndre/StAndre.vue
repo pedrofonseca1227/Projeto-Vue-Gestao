@@ -127,6 +127,7 @@ export default {
     // 🔹 CONTAGEM COMPLETA + BOIS
     const resumoContagem = computed(() => {
       let vacas = 0,
+        novilha = 0,
         vacasSN = 0,
         touros = 0,
         bois = 0,
@@ -141,6 +142,18 @@ export default {
         if (nome.includes("vaca") && !nome.includes("s/b")) {
           vacas++;
           return;
+        }
+
+        if (
+          sexo === "fêmea" || sexo === "femea"
+        ) {
+          if (
+            !nome.includes("vaca") &&
+            !nome.includes("bezerro")
+          ) {
+            novilha++;
+            return;
+          }
         }
 
         if (nome.includes("vaca") && nome.includes("s/b")) {
@@ -176,6 +189,7 @@ export default {
 
       return {
         Vacas: vacas,
+        Novilhas: novilha,
         "Vacas S/B": vacasSN,
         Touros: touros,
         Bois: bois,

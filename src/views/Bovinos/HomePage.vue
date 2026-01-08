@@ -75,6 +75,7 @@
         <h4 class="mb-4">📊 Resumo St. André</h4>
         <p>
           Vacas: <strong>{{ resumoStAndre.vacas }}</strong> |
+          Novilhas: <strong>{{ resumoStAndre.novilha }}</strong> |
           Vacas S/B: <strong>{{ resumoStAndre.vacasSN }}</strong> |
           Touros: <strong>{{ resumoStAndre.touros }}</strong> |
           Bois: <strong>{{ resumoStAndre.bois }}</strong> |
@@ -233,6 +234,7 @@ export default {
     // ===== ✅ Resumo St André (igual Pasto + Bois) =====
     const resumoStAndre = computed(() => {
       let vacas = 0,
+        novilha = 0,
         vacasSN = 0,
         touros = 0,
         bois = 0,
@@ -246,6 +248,11 @@ export default {
 
         if (nome.includes('vaca') && !nome.includes('s/b')) {
           vacas++
+          return
+        }
+
+        if (nome.includes('novilha')) {
+          novilha++
           return
         }
 
@@ -276,7 +283,7 @@ export default {
         }
       })
 
-      return { vacas, vacasSN, touros, bois, bezerrosMacho, bezerrosFemea, bezerrosDesmama }
+      return { vacas, novilha, vacasSN, touros, bois, bezerrosMacho, bezerrosFemea, bezerrosDesmama }
     })
 
     const totalStAndre = computed(() => stAndre.value.length)
