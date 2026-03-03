@@ -47,10 +47,12 @@
           <option v-for="(mes, index) in meses" :key="index" :value="index + 1">{{ mes }}</option>
         </select>
       </div>
+
       <div class="col-md-3">
         <label class="form-label">Ano</label>
         <input type="number" v-model="filtro.ano" class="form-control" />
       </div>
+
       <div class="col-md-3 align-self-end">
         <button @click="gerarPDF" class="btn btn-danger w-100">📄 Exportar PDF</button>
       </div>
@@ -60,6 +62,7 @@
     <div>
       <h4 class="fw-bold mb-3">📊 Resumo de Vendas Confinamento</h4>
       <div v-if="vendasAgrupadas.length === 0" class="text-muted">Nenhuma venda encontrada.</div>
+
       <table v-else class="table table-striped table-bordered text-center align-middle">
         <thead class="table-dark">
           <tr>
@@ -67,16 +70,31 @@
             <th>Categoria</th>
             <th>Preço Arroba (R$)</th>
             <th>Total Vendido</th>
+            <th>Porcentagem %</th>
+            <th>Valor Total (R$)</th>
+            <th>10% (R$)</th>
           </tr>
         </thead>
+
         <tbody>
-          <tr v-for="(v, i) in vendasAgrupadas" :key="i">
+          <tr v-for="(v, i) in porcentagemvendas" :key="i">
             <td>{{ v.dataMedia }}</td>
             <td>{{ v.categoria }}</td>
-            <td>R$ {{ v.precoArroba.toFixed(2) }}</td>
+            <td>R$ {{ Number(v.precoArroba).toFixed(2) }}</td>
             <td>{{ v.quantidade }}</td>
+            <td>{{ v.porcentagem }}</td>
+            <td>R$ {{ Number(v.valorTotal).toFixed(2) }}</td>
+            <td>R$ {{ Number(v.dezPorCento).toFixed(2) }}</td>
           </tr>
         </tbody>
+
+        <!-- Totais no fim da tabela -->
+        <tfoot class="table-light fw-bold">
+          <tr>
+            <td colspan="6" class="text-end">Soma de 10% (Total):</td>
+            <td>R$ {{ Number(totalDezPorCento).toFixed(2) }}</td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   </div>
@@ -116,6 +134,12 @@ export default {
       'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
     ];
 
+    // Função reutilizável para 10%
+    const calcularDezPorCento = (valor) => {
+      const n = Number(valor) || 0;
+      return +(n * 0.10).toFixed(2);
+    };
+
     const carregarVendas = async () => {
       const q = query(collection(db, 'VendasGado'), orderBy('dataVenda', 'desc'));
       const snapshot = await getDocs(q);
@@ -143,11 +167,6 @@ export default {
       }
     };
 
-    const formatarData = (data) => {
-      const d = data?.toDate?.() || new Date(data);
-      return d.toLocaleDateString('pt-BR');
-    };
-
     const vendasFiltradas = computed(() => {
       return vendas.value.filter(v => {
         const d = v.dataVenda?.toDate?.() || new Date(v.dataVenda);
@@ -172,18 +191,43 @@ export default {
             datas: []
           };
         }
-        grupos[key].quantidade += venda.quantidade;
+
+        grupos[key].quantidade += Number(venda.quantidade) || 0;
+
         const data = venda.dataVenda?.toDate?.() || new Date(venda.dataVenda);
         grupos[key].datas.push(data);
       });
 
-      return Object.values(grupos).map(grupo => {
-        const mediaTime = grupo.datas.reduce((acc, d) => acc + d.getTime(), 0) / grupo.datas.length;
+      return Object.values(grupos)
+        .map(grupo => {
+          const mediaTime =
+            grupo.datas.reduce((acc, d) => acc + d.getTime(), 0) / grupo.datas.length;
+
+          return {
+            ...grupo,
+            dataMedia: new Date(mediaTime).toLocaleDateString('pt-BR')
+          };
+        })
+        .sort((a, b) => b.precoArroba - a.precoArroba);
+    });
+
+    // Computed que adiciona Valor Total e 10% em cada grupo
+    const porcentagemvendas = computed(() => {
+      return vendasAgrupadas.value.map(v => {
+        const valorTotal =
+          (Number(v.precoArroba) || 0) * (Number(v.quantidade) || 0);
+
         return {
-          ...grupo,
-          dataMedia: new Date(mediaTime).toLocaleDateString('pt-BR')
+          ...v,
+          valorTotal,
+          dezPorCento: calcularDezPorCento(valorTotal)
         };
-      }).sort((a, b) => b.precoArroba - a.precoArroba);
+      });
+    });
+
+    // Soma final do 10% (para mostrar na tabela e no PDF)
+    const totalDezPorCento = computed(() => {
+      return porcentagemvendas.value.reduce((acc, v) => acc + (Number(v.dezPorCento) || 0), 0);
     });
 
     const gerarPDF = () => {
@@ -191,18 +235,25 @@ export default {
       doc.setFontSize(16);
       doc.text('Resumo Agrupado de Vendas de Gado', 14, 20);
 
-      const body = vendasAgrupadas.value.map(v => [
+      const body = porcentagemvendas.value.map(v => [
         v.dataMedia,
         v.categoria,
-        `R$ ${v.precoArroba.toFixed(2)}`,
-        v.quantidade
+        `R$ ${Number(v.precoArroba).toFixed(2)}`,
+        v.quantidade,
+        `R$ ${Number(v.valorTotal).toFixed(2)}`,
+        `R$ ${Number(v.dezPorCento).toFixed(2)}`
       ]);
 
       autoTable(doc, {
-        head: [['Data', 'Categoria', 'Preço Arroba', 'Total Vendido']],
+        head: [['Data', 'Categoria', 'Preço Arroba', 'Total Vendido', 'Valor Total', '10%']],
         body,
         startY: 30
       });
+
+      // Linha final com o total do 10%
+      const finalY = doc.lastAutoTable.finalY || 30;
+      doc.setFontSize(12);
+      doc.text(`Soma de 10% (Total): R$ ${Number(totalDezPorCento.value).toFixed(2)}`, 14, finalY + 10);
 
       doc.save('vendas-confin-Luizinho.pdf');
     };
@@ -216,9 +267,10 @@ export default {
       mensagemSucesso,
       filtro,
       meses,
-      formatarData,
       vendasFiltradas,
-      vendasAgrupadas,
+      vendasAgrupadas,     // mantém, como você pediu
+      porcentagemvendas,   // usado na tabela/PDF para incluir 10%
+      totalDezPorCento,    // total geral do 10%
       gerarPDF
     };
   }
