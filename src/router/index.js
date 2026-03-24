@@ -18,6 +18,8 @@ import StAndre from '@/views/StAndre/StAndre.vue';
 import DashboardConfinamento from '@/views/Bovinos/DashboardConfinamento.vue';
 import RelatoriosAnaliticos from '@/views/Bovinos/RelatoriosAnaliticos.vue';
 import AdicionarPastoStAndre from '@/views/StAndre/AdicionarPastoStAndre.vue';
+import MovimentacaoLote from '@/views/Bovinos/MovimentacaoLote.vue';
+import HistoricoMovimentacao from '@/views/Bovinos/HistoricoMovimentacao.vue';
 
 const routes = [
   { path: '/', name: 'Login', component: LoginPage },
@@ -36,6 +38,8 @@ const routes = [
   { path: '/dashboardConfinamento', name: 'DashboardConfinamento', component: DashboardConfinamento, meta: { requiresAuth: true } },
   { path: '/relatoriosAnaliticos', name: 'RelatoriosAnaliticos', component: RelatoriosAnaliticos, meta: { requiresAuth: true } },
   {path: '/adicionarPastoStAndre', name: 'AdicionarPastoStAndre', component: AdicionarPastoStAndre, meta: { requiresAuth: true } },
+  {path: '/movimentacaoLote', name: 'MovimentacaoLote', component: MovimentacaoLote, meta: { requiresAuth: true } },
+  {path: '/historicoMovimentacao', name: 'HistoricoMovimentacao', component: HistoricoMovimentacao, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

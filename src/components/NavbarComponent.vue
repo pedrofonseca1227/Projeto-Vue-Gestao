@@ -19,17 +19,37 @@
           <!-- Dropdown Seção -->
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              🔽 Seção: {{ secaoAtiva === 'bovinos' ? 'Bovinos' : secaoAtiva === 'estoque' ? 'Estoque' : secaoAtiva === 'standre' ? 'St André' : '' }}
- 
+              🔽 Seção:
+              {{
+                secaoAtiva === 'bovinos'
+                  ? 'Bovinos'
+                  : secaoAtiva === 'estoque'
+                  ? 'Estoque'
+                  : secaoAtiva === 'standre'
+                  ? 'St André'
+                  : ''
+              }}
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#" @click.prevent="selecionarSecao('estoque')">📦 Estoque</a></li>
-              <li><a class="dropdown-item" href="#" @click.prevent="selecionarSecao('bovinos')">🐄 Bovinos</a></li>
-              <li><a class="dropdown-item" href="#" @click.prevent="selecionarSecao('standre')">🐴 St André</a></li>
+              <li>
+                <a class="dropdown-item" href="#" @click.prevent="selecionarSecao('estoque')">
+                  📦 Estoque
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="#" @click.prevent="selecionarSecao('bovinos')">
+                  🐄 Bovinos
+                </a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="#" @click.prevent="selecionarSecao('standre')">
+                  🐴 St André
+                </a>
+              </li>
             </ul>
           </li>
 
-          <!-- Estoque -->
+          <!-- ESTOQUE -->
           <template v-if="secaoAtiva === 'estoque'">
             <li class="nav-item">
               <router-link to="/produtos" class="nav-link" @click="fecharMenu">Produtos</router-link>
@@ -39,40 +59,99 @@
             </li>
           </template>
 
-          <!-- Bovinos -->
+          <!-- BOVINOS -->
           <template v-else-if="secaoAtiva === 'bovinos'">
+            <!-- Contagem -->
             <li class="nav-item">
-              <router-link to="/contagemPasto" class="nav-link" @click="fecharMenu">Contagem Pasto</router-link>
+              <router-link to="/contagemPasto" class="nav-link" @click="fecharMenu">
+                Contagem
+              </router-link>
             </li>
-            <li class="nav-item">
-              <router-link to="/Confinamento" class="nav-link" @click="fecharMenu">Confinamento</router-link>
+
+            <!-- Dropdown Confinamento -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                Confinamento
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <router-link to="/Confinamento" class="dropdown-item" @click="fecharMenu">
+                    Cadastro de Lotes
+                  </router-link>
+                </li>
+                <li>
+                  <router-link to="/movimentacaoLote" class="dropdown-item" @click="fecharMenu">
+                    Movimentação de Lotes
+                  </router-link>
+                </li>
+                <li>
+                  <router-link to="/historicoMovimentacao" class="dropdown-item" @click="fecharMenu">
+                    Histórico de Movimentações
+                  </router-link>
+                </li>
+              </ul>
             </li>
-            <li class="nav-item">
-              <router-link to="/vendaConfinamento" class="nav-link" @click="fecharMenu">Vendas Confinamento</router-link>
+
+            <!-- Dropdown Vendas -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                Vendas
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <router-link to="/vendaConfinamento" class="dropdown-item" @click="fecharMenu">
+                    Vendas Confinamento
+                  </router-link>
+                </li>
+                <li>
+                  <router-link to="/registrarVenda" class="dropdown-item" @click="fecharMenu">
+                    Registrar Venda
+                  </router-link>
+                </li>
+              </ul>
             </li>
-            <li class="nav-item">
-              <router-link to="/registrarVenda" class="nav-link" @click="fecharMenu">Registro Vendas</router-link>
+
+            <!-- Dropdown Mais -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                Mais
+              </a>
+              <ul class="dropdown-menu">
+                <li>
+                  <router-link to="/cicloGastos" class="dropdown-item" @click="fecharMenu">
+                    Ciclo de Gastos
+                  </router-link>
+                </li>
+                <li>
+                  <router-link to="/relatoriosAnaliticos" class="dropdown-item" @click="fecharMenu">
+                    Relatórios
+                  </router-link>
+                </li>
+              </ul>
             </li>
+
+            <!-- Dashboard -->
             <li class="nav-item">
-              <router-link to="/dashboardConfinamento" class="nav-link" @click="fecharMenu">Dashboard</router-link>
-            </li>
-            <li class="nav-item">
-              <router-link to="/cicloGastos" class="nav-link" @click="fecharMenu">Ciclo Gastos</router-link>
+              <router-link to="/dashboardConfinamento" class="nav-link" @click="fecharMenu">
+                Dashboard
+              </router-link>
             </li>
           </template>
 
+          <!-- ST ANDRE -->
           <template v-else-if="secaoAtiva === 'standre'">
             <li class="nav-item">
               <router-link to="/StAndre" class="nav-link" @click="fecharMenu">St André</router-link>
             </li>
           </template>
         </ul>
+
         <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-                <button class="btn btn-danger btn-sm" @click="handleLogout">
-                    <i class="fas fa-sign-out-alt"></i> Sair
-                </button>
-            </li>
+          <li class="nav-item">
+            <button class="btn btn-danger btn-sm" @click="handleLogout">
+              <i class="fas fa-sign-out-alt"></i> Sair
+            </button>
+          </li>
         </ul>
       </div>
     </div>
@@ -95,6 +174,7 @@ export default {
     const selecionarSecao = (secao) => {
       secaoAtiva.value = secao
       menuAberto.value = false
+
       if (secao === 'bovinos') router.push('/home')
       if (secao === 'estoque') router.push('/produtos')
       if (secao === 'standre') router.push('/StAndre')
@@ -109,14 +189,13 @@ export default {
     }
 
     const handleLogout = async () => {
-        try {
-            await signOut(auth)
-            // Redireciona para a tela de login
-            router.push('/')
-        } catch (error) {
-            console.error('Erro ao fazer logout:', error.code)
-            alert('Ocorreu um erro ao sair. Tente novamente.')
-        }
+      try {
+        await signOut(auth)
+        router.push('/')
+      } catch (error) {
+        console.error('Erro ao fazer logout:', error.code)
+        alert('Ocorreu um erro ao sair. Tente novamente.')
+      }
     }
 
     return {
@@ -150,40 +229,52 @@ export default {
 }
 
 .nav-link:hover,
+.nav-link.router-link-active,
 .nav-link.active {
-  color: #007BFF;
+  color: #007bff;
   font-weight: 600;
 }
 
 .dropdown-menu {
-  min-width: 160px;
+  min-width: 220px;
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+  padding: 0.5rem 0;
+}
+
+.dropdown-item {
+  padding: 0.55rem 1rem;
+  font-weight: 500;
 }
 
 .dropdown-item:hover {
-  background-color: #f1f1f1;
+  background-color: #f1f6fb;
+  color: #004080;
 }
 
 .btn-danger {
-    font-weight: 500;
+  font-weight: 500;
 }
-
 
 @media (max-width: 991px) {
   .navbar-nav {
     width: 100%;
-    text-align: center;
+    text-align: left;
   }
 
   .nav-link {
     width: 100%;
-    text-align: center;
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1rem;
   }
 
   .dropdown-menu {
     width: 100%;
-    text-align: center;
+    text-align: left;
+    border: none;
+    box-shadow: none;
+    background: #f8f9fa;
   }
+
   .navbar-nav:last-child {
     margin-top: 1rem;
   }

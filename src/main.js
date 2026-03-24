@@ -1,10 +1,13 @@
 import { createApp } from 'vue';
 import App from './App.vue';
-import router from './router';  // Importe o router que acabamos de configurar
+import router from './router';
+import MoneyInput from '@/components/MoneyInput.vue';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap';
 
+const app = createApp(App);
 
-createApp(App)
-  .use(router)  // Registre o Vue Router
-  .mount('#app');
+app.component('MoneyInput', MoneyInput);
+app.use(router);
+
+app.mount('#app');
