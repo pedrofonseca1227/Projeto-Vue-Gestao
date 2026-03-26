@@ -84,12 +84,13 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Preço da Arroba (R$)</label>
-        <MoneyInput v-model="precoArroba" class="form-control" required />
+        <label class="form-label">Valor Total da Venda (R$)</label>
+        <MoneyInput v-model="valorTotalVenda" class="form-control" required />
       </div>
 
       <div class="alert alert-info">
-        <p><strong>Receita Total Estimada:</strong> R$ {{ formatarValor(receitaEstimada) }}</p>
+        <p><strong>Arrobas Totais Estimadas:</strong> {{ formatarValor(totalArrobasEstimadas) }} @</p>
+        <p><strong>Receita Total Informada:</strong> R$ {{ formatarValor(receitaEstimada) }}</p>
         <p><strong>Custo Total Estimado:</strong> R$ {{ formatarValor(custoEstimado) }}</p>
         <p><strong>Lucro Total Estimado:</strong> R$ {{ formatarValor(lucroEstimado) }}</p>
       </div>
@@ -168,7 +169,7 @@
           </div>
 
           <div class="modal-body">
-            <p><strong>Preço Arroba:</strong> R$ {{ formatarValor(vendaSelecionada.precoArroba) }}</p>
+            <p><strong>Valor Total da Venda:</strong> R$ {{ formatarValor(vendaSelecionada.valorTotalVenda) }}</p>
             <p><strong>Receita Total:</strong> R$ {{ formatarValor(vendaSelecionada.receitaTotal) }}</p>
             <p><strong>Custo Total:</strong> R$ {{ formatarValor(vendaSelecionada.custoTotal) }}</p>
             <p><strong>Lucro Total:</strong> R$ {{ formatarValor(vendaSelecionada.lucroTotal) }}</p>
@@ -279,7 +280,7 @@ export default {
       { docId: "", quantidadeVendida: null, pesoFinalTotal: null, rendimentoCarcaca: null },
     ]);
 
-    const precoArroba = ref(null);
+    const valorTotalVenda = ref(null);
     const lotes = ref([]);
     const ciclos = ref([]);
     const historico = ref([]);
@@ -441,12 +442,41 @@ export default {
         .filter(Boolean);
     };
 
+    const calcularArrobasLote = (vendaLote) => {
+      if (
+        !vendaLote?.pesoFinalTotal ||
+        !vendaLote?.quantidadeVendida ||
+        !vendaLote?.rendimentoCarcaca
+      ) {
+        return 0;
+      }
+
+      const quantidadeVendida = Number(vendaLote.quantidadeVendida);
+      const pesoFinalTotalKg = Number(vendaLote.pesoFinalTotal);
+      const pesoMedioFinalKg = pesoFinalTotalKg / quantidadeVendida;
+      const pesoCarcacaKgCabeca = pesoMedioFinalKg * (Number(vendaLote.rendimentoCarcaca) / 100);
+      const arrobasCabeca = pesoCarcacaKgCabeca / 15;
+      return arrobasCabeca * quantidadeVendida;
+    };
+
+    const totalArrobasEstimadas = computed(() =>
+      lotesParaVenda.value.reduce((sum, item) => sum + calcularArrobasLote(item), 0)
+    );
+
+    const calcularReceitaRateada = (arrobasTotaisLote) => {
+      const valorTotal = Number(valorTotalVenda.value || 0);
+      const totalArrobas = Number(totalArrobasEstimadas.value || 0);
+
+      if (valorTotal <= 0 || totalArrobas <= 0 || arrobasTotaisLote <= 0) return 0;
+      return valorTotal * (arrobasTotaisLote / totalArrobas);
+    };
+
     const calcularDetalhesLote = (vendaLote) => {
       const lote = buscarLote(vendaLote.docId);
 
       if (
         !lote ||
-        !precoArroba.value ||
+        !valorTotalVenda.value ||
         !vendaLote.pesoFinalTotal ||
         !vendaLote.quantidadeVendida ||
         !vendaLote.rendimentoCarcaca ||
@@ -463,7 +493,7 @@ export default {
       const arrobasCabeca = pesoCarcacaKgCabeca / 15;
       const arrobasTotais = arrobasCabeca * quantidadeVendida;
 
-      const receita = arrobasTotais * Number(precoArroba.value);
+      const receita = calcularReceitaRateada(arrobasTotais);
 
       const custoDiretoUnitario = getCustoUnitarioAtual(lote);
       const custoDireto = custoDiretoUnitario * quantidadeVendida;
@@ -493,12 +523,12 @@ export default {
         arrobasCabeca,
         arrobasTotais,
         rendimentoCarcaca: Number(vendaLote.rendimentoCarcaca),
-        precoArroba: Number(precoArroba.value),
+        valorTotalVendaInformado: Number(valorTotalVenda.value),
+        receita,
         custoDiretoUnitario,
         custoDireto,
         custoIndiretoUnitario,
         custoIndireto,
-        receita,
         custo,
         lucro,
         diasConfinamento,
@@ -524,12 +554,7 @@ export default {
       };
     };
 
-    const receitaEstimada = computed(() =>
-      lotesParaVenda.value.reduce((total, item) => {
-        const det = calcularDetalhesLote(item);
-        return total + (det ? det.receita : 0);
-      }, 0)
-    );
+    const receitaEstimada = computed(() => Number(valorTotalVenda.value || 0));
 
     const custoEstimado = computed(() =>
       lotesParaVenda.value.reduce((total, item) => {
@@ -588,7 +613,7 @@ export default {
 
         rendimentoCarcaca: Number(detalhe.rendimentoCarcaca || 0),
         arrobasTotais: Number((detalhe.arrobasTotais || 0).toFixed(2)),
-        precoArroba: Number(detalhe.precoArroba || 0),
+        valorTotalVendaInformado: Number(detalhe.valorTotalVendaInformado || 0),
 
         custoDiretoUnitario: Number((detalhe.custoDiretoUnitario || 0).toFixed(2)),
         custoDiretoTotal: Number((detalhe.custoDireto || 0).toFixed(2)),
@@ -642,8 +667,8 @@ export default {
     };
 
     const validarFormulario = () => {
-      if (!precoArroba.value || Number(precoArroba.value) <= 0) {
-        return "Informe um preço de arroba válido.";
+      if (!valorTotalVenda.value || Number(valorTotalVenda.value) <= 0) {
+        return "Informe um valor total de venda válido.";
       }
 
       if (!dataVendaSelecionada.value) {
@@ -676,6 +701,10 @@ export default {
         }
       }
 
+      if (Number(totalArrobasEstimadas.value) <= 0) {
+        return "Não foi possível calcular as arrobas totais para ratear a receita.";
+      }
+
       for (let i = 0; i < lotesParaVenda.value.length; i++) {
         const item = lotesParaVenda.value[i];
         const maxDisponivel = getQuantidadeDisponivelLinha(item.docId, i);
@@ -706,7 +735,7 @@ export default {
         }
 
         const quantidadeTotal = detalhes.reduce((sum, d) => sum + Number(d.quantidadeVendida || 0), 0);
-        const receitaTotal = detalhes.reduce((sum, d) => sum + Number(d.receita || 0), 0);
+        const receitaTotal = Number(valorTotalVenda.value || 0);
         const custoTotal = detalhes.reduce((sum, d) => sum + Number(d.custo || 0), 0);
         const lucroTotal = receitaTotal - custoTotal;
 
@@ -782,13 +811,14 @@ export default {
           const vendaRef = doc(collection(db, "RegistroVendasLotes"));
           transaction.set(vendaRef, {
             dataVenda,
-            precoArroba: Number(precoArroba.value),
+            valorTotalVenda: Number(valorTotalVenda.value),
             quantidadeTotal,
             receitaTotal: Number(receitaTotal.toFixed(2)),
             custoTotal: Number(custoTotal.toFixed(2)),
             lucroTotal: Number(lucroTotal.toFixed(2)),
             detalhes: detalhes.map((d) => ({
               ...d,
+              valorTotalVendaInformado: Number(d.valorTotalVendaInformado.toFixed(2)),
               receita: Number(d.receita.toFixed(2)),
               custo: Number(d.custo.toFixed(2)),
               lucro: Number(d.lucro.toFixed(2)),
@@ -827,7 +857,7 @@ export default {
         lotesParaVenda.value = [
           { docId: "", quantidadeVendida: null, pesoFinalTotal: null, rendimentoCarcaca: null },
         ];
-        precoArroba.value = null;
+        valorTotalVenda.value = null;
         dataVendaSelecionada.value = "";
 
         await carregarLotes();
@@ -883,7 +913,7 @@ export default {
             ganhoPesoKg: d.ganhoPesoKg ?? "",
             rendimentoCarcaca: d.rendimentoCarcaca ?? "",
             arrobasTotais: d.arrobasTotais ?? "",
-            precoArroba: d.precoArroba ?? "",
+            valorTotalVendaInformado: d.valorTotalVendaInformado ?? "",
             custoDiretoUnitario: d.custoDiretoUnitario ?? "",
             custoDiretoTotal: d.custoDiretoTotal ?? "",
             custoIndiretoUnitario: d.custoIndiretoUnitario ?? "",
@@ -946,10 +976,11 @@ export default {
 
     return {
       lotesParaVenda,
-      precoArroba,
+      valorTotalVenda,
       lotesElegiveis,
       ciclos,
       historico,
+      totalArrobasEstimadas,
       receitaEstimada,
       custoEstimado,
       lucroEstimado,
