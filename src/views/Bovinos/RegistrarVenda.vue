@@ -17,7 +17,7 @@
             </option>
           </select>
         </div>
-
+ 
         <div class="col-md-2">
           <label class="form-label">Qtde a Vender</label>
           <input
@@ -58,7 +58,7 @@
 
         <div class="col-12" v-if="buscarLote(vendaLote.docId)">
           <div class="alert alert-light border mb-0">
-            <small>
+            <small> 
               <strong>Custo unitário atual:</strong>
               R$ {{ formatarValor(getCustoUnitarioAtual(buscarLote(vendaLote.docId))) }}
               |

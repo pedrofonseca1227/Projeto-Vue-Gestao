@@ -292,7 +292,6 @@ export default {
     });
 
     const form = ref(formPadrao());
-
     const formEdicao = ref({});
 
     const custoUnitarioPreview = computed(() => {
@@ -301,6 +300,26 @@ export default {
       if (!quantidade || quantidade <= 0) return 0;
       return custo / quantidade;
     });
+
+    const extrairPartesLinha = (linha) => {
+      const valor = String(linha || "").trim().toUpperCase();
+
+      const letra = valor.match(/[A-Z]+/)?.[0] || "";
+      const numero = parseInt(valor.match(/\d+/)?.[0] || "0", 10);
+
+      return { letra, numero };
+    };
+
+    const compararLinhas = (a, b) => {
+      const linhaA = extrairPartesLinha(a?.linha);
+      const linhaB = extrairPartesLinha(b?.linha);
+
+      if (linhaA.letra !== linhaB.letra) {
+        return linhaA.letra.localeCompare(linhaB.letra, "pt-BR");
+      }
+
+      return linhaA.numero - linhaB.numero;
+    };
 
     const calcularDiasConfinamento = (dataEntrada) => {
       const entrada = dataEntrada?.toDate ? dataEntrada.toDate() : new Date(dataEntrada);
@@ -312,7 +331,9 @@ export default {
 
     const calcularPesoFinal = (lote) => {
       const dias = calcularDiasConfinamento(lote.dataEntrada);
-      return parseFloat((Number(lote.pesoInicial || 0) + dias * Number(lote.gpd || 0)).toFixed(1));
+      return parseFloat(
+        (Number(lote.pesoInicial || 0) + dias * Number(lote.gpd || 0)).toFixed(1)
+      );
     };
 
     const formatarData = (valor) => {
@@ -339,6 +360,7 @@ export default {
 
     const pesoMedioFinal = computed(() => {
       if (!lotes.value.length || !totalAnimais.value) return 0;
+
       const pesoTotal = lotes.value.reduce((sum, lote) => {
         return sum + calcularPesoFinal(lote) * Number(lote.quantidadeAtual || 0);
       }, 0);
@@ -369,7 +391,8 @@ export default {
             (lote) =>
               (lote.status || "ATIVO") === "ATIVO" &&
               Number(lote.quantidadeAtual || 0) > 0
-          );
+          )
+          .sort(compararLinhas);
       } catch (error) {
         console.error("Erro ao carregar lotes:", error);
         mensagem.value = "❌ Erro ao carregar lotes.";
@@ -413,7 +436,9 @@ export default {
         await runTransaction(db, async (transaction) => {
           const novoLoteRef = doc(lotesRef);
           const custoUnitarioCompra = custoCompraInicial / quantidadeInicial;
-          const dataEntrada = Timestamp.fromDate(new Date(`${form.value.dataEntrada}T00:00:00`));
+          const dataEntrada = Timestamp.fromDate(
+            new Date(`${form.value.dataEntrada}T00:00:00`)
+          );
 
           const novoLote = {
             id: form.value.id.trim(),
