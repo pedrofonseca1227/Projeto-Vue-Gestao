@@ -1,46 +1,100 @@
-# Sistema de Gestão - Vue.js
+# Cattle Management System
 
-Aplicação Web desenvolvida em Vue.js com o objetivo de simular um sistema de gestão simples.
+Fullstack web application developed to support cattle management and agribusiness administration workflows in a real-world operational environment.
 
-Este projeto foi desenvolvido com fins acadêmicos e está hospedado no Azure Static Web Apps.
+The platform was designed to manage operational data, business workflows, and livestock-related processes through a scalable and maintainable web-based system.
 
-## 💻 Tecnologias Utilizadas
+---
 
-- Vue.js
-- JavaScript
-- HTML5 & CSS3
-- Azure Static Web Apps
-- GitHub Actions (CI/CD)
+## Tech Stack
 
-## 🚀 Acesso ao Projeto
+### Frontend
 
-A aplicação está disponível no link abaixo:
+* Vue.js
+* JavaScript
+* Vite
+* HTML5
+* CSS3
 
-🔗 [Clique aqui para acessar o sistema](https://gestao-vue.azurestaticapps.net)
+### Backend & Infrastructure
 
-## 📦 Como Executar Localmente
+* Firebase Authentication
+* Firestore Database
+* Firebase Security Rules
 
-Clone o repositório:
+### Testing
+
+* Unit Testing
+* Integration Testing
+
+### Tools
+
+* Git
+* GitHub
+* Postman
+
+---
+
+## Features
+
+* User authentication and access control
+* Cattle management workflows
+* Operational and administrative data management
+* Responsive frontend interface
+* Real-time database integration
+* Secure backend workflows using Firebase
+* Automated testing workflows
+* Dashboard and operational data visualization
+
+---
+
+## Architecture
+
+The application follows a frontend + cloud backend architecture using Vue.js for the client-side application and Firebase services for authentication, database management, and access control workflows.
+
+---
+
+## Engineering Focus
+
+This project was developed with focus on:
+
+* Fullstack web development
+* Scalable application structure
+* Cloud-based backend workflows
+* Maintainable frontend architecture
+* Automated testing and software reliability
+* Real-world operational workflows
+
+---
+
+## Running Locally
+
+Clone the repository:
 
 ```bash
-git clone https://github.com/pedrofonseca1227/Projeto-Vue-Gestao.git
+git clone [REPOSITORY_URL]
+```
 
-Instale as dependências:
+Install dependencies:
 
+```bash
 npm install
-Execute o projeto:
+```
 
-npm run serve
-Gere o build de produção:
+Run the application:
 
+```bash
+npm run dev
+```
+
+Build for production:
+
+```bash
 npm run build
+```
 
-Este projeto foi desenvolvido com foco em aprendizado prático de:
+---
 
-Estruturação de um projeto Vue.js
+## Status
 
-Versionamento com Git e GitHub
-
-Deploy automático utilizando Azure Static Web Apps
-
-Organização de um projeto para portfólio profissional
+Production-oriented project actively developed and improved based on operational requirements and workflow evolution.
